@@ -26,3 +26,5 @@ function! s:InsertIncoming()
 endfunction
 
 command! -buffer Incoming call <SID>InsertIncoming()
+
+setl commentstring=;%s
