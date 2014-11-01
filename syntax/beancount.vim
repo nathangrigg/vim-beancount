@@ -36,7 +36,7 @@ syn region beanClose matchgroup=beanKeyword start="close" end="$"
             \ contains=beanAccount,beanComment
 syn region beanNote matchgroup=beanKeyword start="\vnote|document" end="$"
             \ contains=beanAccount,beanString,beanComment
-syn region beanBalance matchgroup=beanKeyword start="balance" end="$"
+syn region beanBalance matchgroup=beanKeyword start="balance\|price" end="$"
             \ contains=beanAccount,beanAmount,beanComment
 syn keyword beanKeyword pushtag poptag
 syn region beanPad matchgroup=beanKeyword start="^pad" end="$"
