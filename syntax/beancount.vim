@@ -21,7 +21,7 @@ syn match beanAccount "\v[[:alnum:]]+:[[:alnum:]:]+" contained
 
 " Most directives start with a date.
 syn match beanDate "^\v\d{4}-\d{2}-\d{2}" skipwhite
-            \ nextgroup=beanOpen,beanTxn,beanClose,beanNote,beanBalance,beanEvent,beanPad
+            \ nextgroup=beanOpen,beanTxn,beanClose,beanNote,beanBalance,beanEvent,beanPad,beanPrice
 " Options and events have two string arguments. The first, we are matching as
 " beanOptionTitle and the second as a regular string.
 syn region beanOption matchgroup=beanKeyword start="^option" end="$"
@@ -36,8 +36,10 @@ syn region beanClose matchgroup=beanKeyword start="close" end="$"
             \ contains=beanAccount,beanComment
 syn region beanNote matchgroup=beanKeyword start="\vnote|document" end="$"
             \ contains=beanAccount,beanString,beanComment
-syn region beanBalance matchgroup=beanKeyword start="balance\|price" end="$"
+syn region beanBalance matchgroup=beanKeyword start="balance" end="$"
             \ contains=beanAccount,beanAmount,beanComment
+syn region beanPrice matchgroup=beanKeyword start="price" end="$"
+            \ contains=beanCurrency,beanAmount
 syn keyword beanKeyword pushtag poptag
 syn region beanPad matchgroup=beanKeyword start="^pad" end="$"
             \ contains=beanAccount,beanComment
