@@ -26,22 +26,24 @@ syn match beanDate "^\v\d{4}-\d{2}-\d{2}" skipwhite
 " beanOptionTitle and the second as a regular string.
 syn region beanOption matchgroup=beanKeyword start="^option" end="$"
             \ contains=beanOptionTitle,beanComment
+syn region beanOption matchgroup=beanKeyword start="^plugin" end="$"
+            \ contains=beanString,beanComment
 syn region beanEvent matchgroup=beanKeyword start="event" end="$" contained
             \ contains=beanOptionTitle,beanComment
 syn region beanOptionTitle start='"' skip='\\"' end='"' contained
             \ nextgroup=beanString skipwhite
-syn region beanOpen matchgroup=beanKeyword start="open" end="$"
+syn region beanOpen matchgroup=beanKeyword start="open" end="$" contained
             \ contains=beanAccount,beanCurrency,beanComment
-syn region beanClose matchgroup=beanKeyword start="close" end="$"
+syn region beanClose matchgroup=beanKeyword start="close" end="$" contained
             \ contains=beanAccount,beanComment
 syn region beanNote matchgroup=beanKeyword start="\vnote|document" end="$"
-            \ contains=beanAccount,beanString,beanComment
-syn region beanBalance matchgroup=beanKeyword start="balance" end="$"
+            \ contains=beanAccount,beanString,beanComment contained
+syn region beanBalance matchgroup=beanKeyword start="balance" end="$" contained
             \ contains=beanAccount,beanAmount,beanComment
-syn region beanPrice matchgroup=beanKeyword start="price" end="$"
+syn region beanPrice matchgroup=beanKeyword start="price" end="$" contained
             \ contains=beanCurrency,beanAmount
 syn keyword beanKeyword pushtag poptag
-syn region beanPad matchgroup=beanKeyword start="^pad" end="$"
+syn region beanPad matchgroup=beanKeyword start="^pad" end="$" contained
             \ contains=beanAccount,beanComment
 
 syn region beanTxn matchgroup=beanKeyword start="\v(txn)?\s+[*!]" skip="^\s"
