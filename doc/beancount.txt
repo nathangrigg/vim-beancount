@@ -1,17 +1,69 @@
-* `:AlignCommodity`
+beancount.txt  Filetype plugin for beancount files
 
-  adds spaces between an account and commodity so that the decimal points of
-  the commodities all occur in the column given by `g:decimal_separator_col`.
-  If an amount has no decimal point, the imaginary decimal point to the right
-  of the least significant digit will align.
+Author:   Nathan Grigg <http://nathangrigg.net>
+Repo:     https://github.com/nathangrigg/vim-beancount
+License:  Same terms as Vim itselve (see |license|)
 
-  The command acts on a range, with the default being the current line. If the
-  cursor happens to be inside that range and to the right of the account name,
-  the cursor will be pushed to the right the appropriate amount, so that it
-  remains on the same character.
+INTRODUCTION                                          *beancount*
 
-  The alignment character can be set using `g:beancount_decimal_separator`.
-  The script assumes the use of spaces for alignment. It does not understand
-  tabs. You might like the following remap:
+Filetype plugin and functions for working with beancount files.
 
-           inoremap . .<C-O>:AlignCommodity<CR>
+COMMANDS                                              *beancount-commands*
+
+
+                                                      *beancount-:AlignCommodity*
+:AlignCommodity     Adds spaces between an account and commodity so that the
+                    decimal points of the commodities all occur in the column
+                    given by `g:decimal_separator_col`.  If an amount has no
+                    decimal point, the imaginary decimal point to the right
+                    of the least significant digit will align.
+
+                    The command acts on a range, with the default being the
+                    current line. If the cursor happens to be inside that
+                    range and to the right of the account name, the cursor
+                    will be pushed to the right the appropriate amount, so
+                    that it remains on the same character.
+
+                    The alignment character can be set using
+                    `g:beancount_decimal_separator`.  The script assumes the
+                    use of spaces for alignment. It does not understand tabs.
+
+                    You can use the following insert-mode remap to
+                    automatically align commodities every time you type a
+                    decimal point: >
+
+                        inoremap . .<C-O>:AlignCommodity<CR>
+<
+
+
+COMPLETION                                           *beancount-completion*
+
+You can complete account names using CTRL-X CTRL-O. |i_CTRL-X_CTRL-O|
+Accounts must have their `open` directive in the current file. Completion is
+always case sensitive and exact. If the base string includes colons, each
+colon-separated peice can separately match a peice of the account.
+
+For example, `Ex:Other` would complete to `Expenses:Donations:Other` or
+`Liabilities:AmericanExpress:InterestOther`
+
+SYNTAX                                              *beancount-syntax*
+
+We use the following syntax highlighting groups:
+
+    beanKeyword:  Keywords such as open, close, option.
+    beanOptionTitle: The first argument to the option keyword.
+    beanDate: A date in a beancount directive.
+    beanString: Strings, such as account descriptions.
+    beanComment: Comments.
+    beanAccount: Account names.
+    beanAmount: Monetary amounts.
+    beanCurrency: Currency codes.
+    beanCost: Cost, e.g. {100.00 USD}
+    beanPrice: Price, e.g. @ 100.00 USD
+
+FILETYPE DETECTION                                  *beancount-ftdetect*
+
+We consider files of the form `*.bean` and `*.beancount` to be beancount
+files.
+
+  vim:tw=78:et:ft=help:norl:
