@@ -37,3 +37,6 @@ function! s:InsertIncoming()
 endfunction
 
 command! -buffer Incoming call <SID>InsertIncoming()
+
+
+setl omnifunc=beancount#complete_account

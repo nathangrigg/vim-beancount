@@ -36,3 +36,31 @@ function! beancount#align_commodity(line1, line2)
         endif
     endwhile
 endfunction
+
+" Complete account name.
+function! beancount#complete_account(findstart, base)
+    if a:findstart
+        let l:col = searchpos('\s\zs', "bn", line("."))[1]
+        if col == 0
+            return -1
+        else
+            return col
+        endif
+    endif
+
+    let l:pattern = '^\V\.\{10\}\s\+open\s\+\zs\S\*' .
+                \ substitute(a:base, ":", '\\S\\*:\\S\\*', "g")
+    let l:view = winsaveview()
+    let l:fe = &foldenable
+    set nofoldenable
+    call cursor(1, 1)
+    let l:matches = []
+    while 1
+        let l:cline = search(pattern, "W")
+        if l:cline == 0 | break | endif
+        call add(matches, expand("<cWORD>"))
+    endwhile
+    let &foldenable = l:fe
+    call winrestview(l:view)
+    return l:matches
+endfunction
