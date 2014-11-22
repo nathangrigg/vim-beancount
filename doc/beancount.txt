@@ -2,7 +2,7 @@ beancount.txt  Filetype plugin for beancount files
 
 Author:   Nathan Grigg <http://nathangrigg.net>
 Repo:     https://github.com/nathangrigg/vim-beancount
-License:  Same terms as Vim itselve (see |license|)
+License:  Same terms as Vim itself (see |license|).
 
 INTRODUCTION                                          *beancount*
 
@@ -34,6 +34,13 @@ COMMANDS                                              *beancount-commands*
 
                         inoremap . .<C-O>:AlignCommodity<CR>
 <
+                    You may also want to set other mappings for this. For
+                    example, I use >
+
+                        nnoremap <buffer> <leader>= :AlignCommodity<CR>
+                        vnoremap <buffer> <leader>= :AlignCommodity<CR>
+<
+
 
 
 COMPLETION                                           *beancount-completion*
@@ -44,7 +51,7 @@ always case sensitive and exact. If the base string includes colons, each
 colon-separated peice can separately match a peice of the account.
 
 For example, `Ex:Other` would complete to `Expenses:Donations:Other` or
-`Liabilities:AmericanExpress:InterestOther`
+`Liabilities:AmericanExpress:InterestOther`.
 
 SYNTAX                                              *beancount-syntax*
 
@@ -63,7 +70,7 @@ We use the following syntax highlighting groups:
 
 FILETYPE DETECTION                                  *beancount-ftdetect*
 
-We consider files of the form `*.bean` and `*.beancount` to be beancount
-files.
+The plugin considers files of the form `*.bean` and `*.beancount` to be
+beancount files.
 
   vim:tw=78:et:ft=help:norl:
