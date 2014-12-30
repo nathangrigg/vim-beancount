@@ -40,7 +40,7 @@ endfunction
 " Complete account name.
 function! beancount#complete_account(findstart, base)
     if a:findstart
-        let l:col = searchpos('\s\zs', "bn", line("."))[1]
+        let l:col = searchpos('\s', "bn", line("."))[1]
         if col == 0
             return -1
         else
