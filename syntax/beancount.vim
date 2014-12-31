@@ -17,6 +17,8 @@ syn match beanAmount "\v[-+]?[[:digit:].,]+" nextgroup=beanCurrency contained
 syn match beanCurrency "\v\w+" contained
 " Account name: alphanumeric with at least one colon.
 syn match beanAccount "\v[[:alnum:]]+:[[:alnum:]:]+" contained
+syn match beanTag "\v#[a-z]+" contained
+syn match beanLink "\v\^\S+" contained
 
 
 " Most directives start with a date.
@@ -47,12 +49,13 @@ syn region beanPad matchgroup=beanKeyword start="^pad" end="$" contained
             \ contains=beanAccount,beanComment
 
 syn region beanTxn matchgroup=beanKeyword start="\v(txn)?\s+[*!]" skip="^\s"
-            \ end="^" contains=beanString,beanPost,beanComment contained
-syn region beanPost start="^\v\s+" end="$"
+            \ end="^" contains=beanString,beanPost,beanComment,beanTag,beanLink,beanMeta contained
+syn region beanPost start="^\v\C\s+[A-Z]@=" end="$"
             \ contains=beanAccount,beanAmount,beanComment,beanCost,beanPrice
+syn region beanMeta matchgroup=beanTag start="^\v\C\s+[a-z]+:(\s|$)@=" end="$"
+
 syn region beanCost start="{" end="}" contains=beanAmount contained
 syn match beanPrice "\V@@\?" nextgroup=beanAmount contained
-" TODO: tags and links
 
 highlight default link beanKeyword Keyword
 highlight default link beanOptionTitle Keyword
@@ -64,3 +67,6 @@ highlight default link beanAmount Number
 highlight default link beanCurrency Number
 highlight default link beanCost Number
 highlight default link beanPrice Number
+highlight default link beanTag Comment
+highlight default link beanLink Comment
+highlight default link beanMeta Comment
