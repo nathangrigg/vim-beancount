@@ -18,6 +18,12 @@ endif
 if !exists("g:beancount_decimal_separator")
     let g:beancount_decimal_separator = "."
 endif
+if !exists('g:beancount_account_completion')
+  let g:beancount_account_completion = 'default'
+endif
+if !exists('g:beancount_detailed_first')
+  let g:beancount_detailed_first = 0
+endif
 
 command! -buffer -range AlignCommodity
             \ :call beancount#align_commodity(<line1>, <line2>)

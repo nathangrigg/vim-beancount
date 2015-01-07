@@ -37,6 +37,16 @@ function! beancount#align_commodity(line1, line2)
     endwhile
 endfunction
 
+function! s:count_expression(text, expression)
+  return len(split(a:text, a:expression, 1)) - 1
+endfunction
+
+function! s:sort_accounts_by_depth(name1, name2)
+  let l:depth1 = s:count_expression(a:name1, ':')
+  let l:depth2 = s:count_expression(a:name2, ':')
+  return depth1 == depth2 ? 0 : depth1 > depth2 ? 1 : -1
+endfunction
+
 " Complete account name.
 function! beancount#complete_account(findstart, base)
     if a:findstart
@@ -56,14 +66,25 @@ function! beancount#complete_account(findstart, base)
         endif
         let b:beancount_accounts = beancount#find_accounts(l:root)
     endif
-    let l:pattern = '\V' . substitute(a:base, ":", '\\S\\*:\\S\\*', "g")
+
+    if g:beancount_account_completion ==? 'chunks'
+        let l:pattern = '^\V' . substitute(a:base, ":", '\\[^:]\\*:', "g") . '\[^:]\*'
+    else
+        let l:pattern = '^\V\.\*' . substitute(a:base, ":", '\\.\\*:\\.\\*', "g") . '\.\*'
+    endif
+
     let l:matches = []
     let l:index = -1
     while 1
         let l:index = match(b:beancount_accounts, l:pattern, l:index + 1)
         if l:index == -1 | break | endif
-        call add(l:matches, b:beancount_accounts[l:index])
+        call add(l:matches, matchstr(b:beancount_accounts[l:index], l:pattern))
     endwhile
+
+    if g:beancount_detailed_first
+        let l:matches = reverse(sort(l:matches, 's:sort_accounts_by_depth'))
+    endif
+
     return l:matches
 endfunction
 
@@ -84,7 +105,6 @@ def combine_paths(old, new):
         new if os.path.isabs(new) else os.path.join(old, new))
 
 def parse_file(fh, files, accounts):
-    regexes = ((RE_INCLUDE, files), (RE_ACCOUNT, accounts))
     for line in fh:
         m = RE_INCLUDE.match(line)
         if m: files.append(combine_paths(os.path.dirname(fh.name), m.group(1)))

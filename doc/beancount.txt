@@ -57,10 +57,25 @@ COMPLETION                                           *beancount-completion*
 You can complete account names using CTRL-X CTRL-O. |i_CTRL-X_CTRL-O|
 Accounts must have their `open` directive in the current file. Completion is
 always case sensitive and exact. If the base string includes colons, each
-colon-separated peice can separately match a peice of the account.
+colon-separated piece can separately match a piece of the account.
 
 For example, `Ex:Other` would complete to `Expenses:Donations:Other` or
 `Liabilities:AmericanExpress:InterestOther`.
+
+There is another mode of completion where each colon-separated piece
+has to match at the beginning of that level of the account hierarchy, e.g.
+`Ex:Oth` would match `Expenses:Other` but not `Expenses:Other:Something`
+nor one of the two examples given above.
+`Ex:Oth:` would, however, list all direct sub-accounts of `Expenses:Other`.
+To enable this mode use
+
+        let g:beancount_account_completion = 'chunks'
+
+Optionally, the list of candidates can be sorted by the number of levels
+in the account hierarchy (e.g. return 'Expenses:Other' before 'Expenses').
+This behavior can be enabled using
+
+        let g:beancount_detailed_first = 1
 
 SYNTAX                                              *beancount-syntax*
 
