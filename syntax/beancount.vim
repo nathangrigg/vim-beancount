@@ -17,7 +17,7 @@ syn match beanAmount "\v[-+]?[[:digit:].,]+" nextgroup=beanCurrency contained
 syn match beanCurrency "\v\w+" contained
 " Account name: alphanumeric with at least one colon.
 syn match beanAccount "\v[[:alnum:]]+:[-[:alnum:]:]+" contained
-syn match beanTag "\v#[a-z]+" contained
+syn match beanTag "\v#[-a-z]+" contained
 syn match beanLink "\v\^\S+" contained
 
 
