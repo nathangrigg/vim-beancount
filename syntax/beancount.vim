@@ -17,7 +17,7 @@ syn match beanAmount "\v[-+]?[[:digit:].,]+" nextgroup=beanCurrency contained
 syn match beanCurrency "\v\w+" contained
 " Account name: alphanumeric with at least one colon.
 syn match beanAccount "\v[[:alnum:]]+:[-[:alnum:]:]+" contained
-syn match beanTag "\v#[-a-z]+" contained
+syn match beanTag "\v#[-[:alnum:]]+" contained
 syn match beanLink "\v\^\S+" contained
 
 
@@ -45,14 +45,14 @@ syn region beanBalance matchgroup=beanKeyword start="balance" end="$" contained
 syn region beanPrice matchgroup=beanKeyword start="price" end="$" contained
             \ contains=beanCurrency,beanAmount
 syn keyword beanKeyword pushtag poptag
-syn region beanPad matchgroup=beanKeyword start="^pad" end="$" contained
+syn region beanPad matchgroup=beanKeyword start="pad" end="$" contained
             \ contains=beanAccount,beanComment
 
 syn region beanTxn matchgroup=beanKeyword start="\v(txn)?\s+[*!]" skip="^\s"
             \ end="^" contains=beanString,beanPost,beanComment,beanTag,beanLink,beanMeta contained
 syn region beanPost start="^\v\C\s+[A-Z]@=" end="$"
             \ contains=beanAccount,beanAmount,beanComment,beanCost,beanPrice
-syn region beanMeta matchgroup=beanTag start="^\v\C\s+[a-z]+:(\s|$)@=" end="$"
+syn region beanMeta matchgroup=beanTag start="^\v\C\s+[-a-z]+:(\s|$)@=" end="$"
 
 syn region beanCost start="{" end="}" contains=beanAmount contained
 syn match beanPrice "\V@@\?" nextgroup=beanAmount contained
