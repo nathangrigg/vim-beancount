@@ -23,3 +23,16 @@ command! -buffer -range AlignCommodity
 
 " Omnifunc for account completion.
 setl omnifunc=beancount#complete_account
+
+" Don't allow C-X or C-A, since these are dangerous to a finance file.
+try
+    nmap <unique> <buffer> <C-X> <Nop>
+    nnoremap <buffer> <C-X><C-X> <C-X>
+catch /E227/
+endtry
+
+try
+    nmap <buffer> <C-A> <Nop>
+    nnoremap <buffer> <C-A><C-A> <C-A>
+catch /E227/
+endtry
