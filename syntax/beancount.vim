@@ -44,7 +44,8 @@ syn region beanBalance matchgroup=beanKeyword start="balance" end="$" contained
             \ keepend contains=beanAccount,beanAmount,beanComment
 syn region beanPrice matchgroup=beanKeyword start="price" end="$" contained
             \ keepend contains=beanCurrency,beanAmount
-syn keyword beanKeyword pushtag poptag
+syn region beanPushTag matchgroup=beanKeyword start="\v^(push|pop)tag" end="$"
+            \ keepend contains=beanTag
 syn region beanPad matchgroup=beanKeyword start="pad" end="$" contained
             \ keepend contains=beanAccount,beanComment
 
