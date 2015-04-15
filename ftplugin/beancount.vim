@@ -10,6 +10,7 @@ let b:undo_ftplugin = "setlocal foldmethod< comments< commentstring<"
 setl foldmethod=syntax
 setl comments=b:;
 setl commentstring=;%s
+compiler beancount
 
 if !exists("g:beancount_separator_col")
     let g:beancount_separator_col = 50
