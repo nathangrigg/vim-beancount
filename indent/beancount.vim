@@ -13,8 +13,6 @@ function GetBeancountIndent(line_num)
     let this_line = getline(a:line_num)
     let prev_line = getline(a:line_num - 1)
     " This is a new directive or previous line is blank.
-    echom this_line
-    echom prev_line
     if this_line =~ '\v^\s*\d{4}-\d{2}-\d{2}' || prev_line =~ '^\s*$'
         return 0
     endif
