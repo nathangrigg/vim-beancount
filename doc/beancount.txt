@@ -8,6 +8,15 @@ INTRODUCTION                                          *beancount*
 
 Filetype plugin and functions for working with beancount files.
 
+Contents:
+
+        Commands.............|beancount-commands|
+        Completion.........|beancount-completion|
+        Syntax.................|beancount-syntax|
+        Compiler.............|beancount-compiler|
+        Filetype Detection...|beancount-ftdetect|
+
+
 COMMANDS                                              *beancount-commands*
 
 
