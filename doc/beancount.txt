@@ -68,6 +68,12 @@ We use the following syntax highlighting groups:
     beanCost: Cost, e.g. {100.00 USD}
     beanPrice: Price, e.g. @ 100.00 USD
 
+COMPILER                                            *beancount-compiler*
+
+The plugin defines and sets the compiler to "beancount". Simply use the
+command ":make" to run `bean-check` on the current file and load the errors
+into the quickfix window.
+
 FILETYPE DETECTION                                  *beancount-ftdetect*
 
 The plugin considers files of the form `*.bean` and `*.beancount` to be
