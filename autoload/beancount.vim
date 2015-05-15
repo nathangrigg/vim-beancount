@@ -87,9 +87,7 @@ def parse_file(fh, files, accounts):
     regexes = ((RE_INCLUDE, files), (RE_ACCOUNT, accounts))
     for line in fh:
         m = RE_INCLUDE.match(line)
-        if m:
-            files.append(combine_paths(os.path.dirname(fh.name), m.group(1)))
-            vim.command('echom "{}"'.format(files))
+        if m: files.append(combine_paths(os.path.dirname(fh.name), m.group(1)))
         m = RE_ACCOUNT.match(line)
         if m: accounts.add(m.group(1))
 
