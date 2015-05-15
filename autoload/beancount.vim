@@ -56,7 +56,7 @@ function! beancount#complete_account(findstart, base)
         endif
         let b:beancount_accounts = beancount#find_accounts(l:root)
     endif
-    let l:pattern = '^\V' . substitute(a:base, ":", '\\S\\*:\\S\\*', "g")
+    let l:pattern = '\V' . substitute(a:base, ":", '\\S\\*:\\S\\*', "g")
     let l:matches = []
     let l:index = -1
     while 1
