@@ -48,19 +48,63 @@ function! beancount#complete_account(findstart, base)
         endif
     endif
 
-    let l:pattern = '^\V\.\{10\}\s\+open\s\+\zs\S\*' .
-                \ substitute(a:base, ":", '\\S\\*:\\S\\*', "g")
-    let l:view = winsaveview()
-    let l:fe = &foldenable
-    set nofoldenable
-    call cursor(1, 1)
+    if exists('b:beancount_root')
+        let l:root = b:beancount_root
+    else
+        let l:root = expand('%')
+    endif
+    let l:accounts = beancount#find_accounts(l:root)
+    let l:pattern = '^\V' . substitute(a:base, ":", '\\S\\*:\\S\\*', "g")
     let l:matches = []
+    let l:index = -1
     while 1
-        let l:cline = search(pattern, "W")
-        if l:cline == 0 | break | endif
-        call add(matches, expand("<cWORD>"))
+        let l:index = match(l:accounts, l:pattern, l:index + 1)
+        if l:index == -1 | break | endif
+        call add(l:matches, l:accounts[l:index])
     endwhile
-    let &foldenable = l:fe
-    call winrestview(l:view)
     return l:matches
+endfunction
+
+" Get list of acounts.
+function! beancount#find_accounts(root_file)
+    python << EOM
+import collections
+import os
+import re
+import sys
+import vim
+
+RE_INCLUDE = re.compile(r'^include\s+"([^\n"]+)"')
+RE_ACCOUNT = re.compile(r'^\d{4,}-\d{2}-\d{2}\s+open\s+(\S+)')
+
+def combine_paths(old, new):
+    return os.path.normpath(
+        new if os.path.isabs(new) else os.path.join(old, new))
+
+def parse_file(fh, files, accounts):
+    regexes = ((RE_INCLUDE, files), (RE_ACCOUNT, accounts))
+    for line in fh:
+        m = RE_INCLUDE.match(line)
+        if m:
+            files.append(combine_paths(os.path.dirname(fh.name), m.group(1)))
+            vim.command('echom "{}"'.format(files))
+        m = RE_ACCOUNT.match(line)
+        if m: accounts.add(m.group(1))
+
+files = collections.deque([vim.eval("a:root_file")])
+accounts = set()
+seen = set()
+while files:
+    current = files.popleft()
+    if current in seen:
+        continue
+    seen.add(current)
+    try:
+        with open(current, 'r') as fh:
+            parse_file(fh, files, accounts)
+    except IOError as err:
+        pass
+
+vim.command('return [{}]'.format(','.join(repr(x) for x in sorted(accounts))))
+EOM
 endfunction
