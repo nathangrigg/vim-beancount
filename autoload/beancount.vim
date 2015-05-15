@@ -48,19 +48,21 @@ function! beancount#complete_account(findstart, base)
         endif
     endif
 
-    if exists('b:beancount_root')
-        let l:root = b:beancount_root
-    else
-        let l:root = expand('%')
+    if !exists('b:beancount_accounts')
+        if exists('b:beancount_root')
+            let l:root = b:beancount_root
+        else
+            let l:root = expand('%')
+        endif
+        let b:beancount_accounts = beancount#find_accounts(l:root)
     endif
-    let l:accounts = beancount#find_accounts(l:root)
     let l:pattern = '^\V' . substitute(a:base, ":", '\\S\\*:\\S\\*', "g")
     let l:matches = []
     let l:index = -1
     while 1
-        let l:index = match(l:accounts, l:pattern, l:index + 1)
+        let l:index = match(b:beancount_accounts, l:pattern, l:index + 1)
         if l:index == -1 | break | endif
-        call add(l:matches, l:accounts[l:index])
+        call add(l:matches, b:beancount_accounts[l:index])
     endwhile
     return l:matches
 endfunction
