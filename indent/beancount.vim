@@ -22,7 +22,8 @@ function! s:IsMetadata(str)
 endfunction
 
 function! s:IsTransaction(str)
-    return a:str =~ '\v^\s*\d{4}-\d{2}-\d{2}\s+(txn\s+)?\S\s'
+    " The final \S represents the flag (e.g. * or !).
+    return a:str =~ '\v^\s*\d{4}-\d{2}-\d{2}\s+(txn\s+)?\S(\s|$)'
 endfunction
 
 function GetBeancountIndent(line_num)
