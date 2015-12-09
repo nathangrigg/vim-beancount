@@ -30,6 +30,8 @@ syn region beanOption matchgroup=beanKeyword start="^option" end="$"
             \ keepend contains=beanOptionTitle,beanComment
 syn region beanOption matchgroup=beanKeyword start="^plugin" end="$"
             \ keepend contains=beanString,beanComment
+syn region beanInclude matchgroup=beanKeyword start="^include" end="$"
+            \ keepend contains=beanString,beanComment
 syn region beanEvent matchgroup=beanKeyword start="event" end="$" contained
             \ keepend contains=beanOptionTitle,beanComment
 syn region beanOptionTitle start='"' skip='\\"' end='"' contained
