@@ -56,7 +56,7 @@ syn region beanTxn matchgroup=beanKeyword start="\v(txn)?\s+[*!]" skip="^\s"
             \ contains=beanString,beanPost,beanComment,beanTag,beanLink,beanMeta
 syn region beanPost start="^\v\C\s+[A-Z]@=" end="$"
             \ contains=beanAccount,beanAmount,beanComment,beanCost,beanPrice
-syn region beanMeta matchgroup=beanTag start="^\v\C\s+[-a-z]+:(\s|$)@=" end="$"
+syn region beanMeta matchgroup=beanTag start="^\v\C\s+[a-z][-_a-zA-Z0-9]*:(\s|$)@=" end="$"
 
 syn region beanCost start="{" end="}" contains=beanAmount contained
 syn match beanPrice "\V@@\?" nextgroup=beanAmount contained
