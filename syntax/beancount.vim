@@ -61,6 +61,18 @@ syn region beanMeta matchgroup=beanTag start="^\v\C\s+[-a-z]+:(\s|$)@=" end="$"
 syn region beanCost start="{" end="}" contains=beanAmount contained
 syn match beanPrice "\V@@\?" nextgroup=beanAmount contained
 
+syn region beanHashHeaderFold
+    \ start="^\z(#\+\)"
+    \ skip="^\s*\z1#\+"
+    \ end="^\(#\)\@="
+    \ fold contains=TOP
+
+syn region beanStarHeaderFold
+    \ start="^\z(\*\+\)"
+    \ skip="^\s*\z1\*\+"
+    \ end="^\(\*\)\@="
+    \ fold contains=TOP
+
 highlight default link beanKeyword Keyword
 highlight default link beanOptionTitle Keyword
 highlight default link beanDate Keyword
