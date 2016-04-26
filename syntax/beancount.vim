@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: beancount
 " Maintainer: Nathan Grigg
-" Latest Revision: 2014-10-07
+" Latest Revision: 2016-04-25
 
 " if exists("b:current_syntax")
 "     finish
@@ -22,7 +22,7 @@ syn match beanLink "\v\^\S+" contained
 
 
 " Most directives start with a date.
-syn match beanDate "^\v\d{4}-\d{2}-\d{2}" skipwhite
+syn match beanDate "^\v\d{4}[-/]\d{2}[-/]\d{2}" skipwhite
             \ nextgroup=beanOpen,beanTxn,beanClose,beanNote,beanBalance,beanEvent,beanPad,beanPrice
 " Options and events have two string arguments. The first, we are matching as
 " beanOptionTitle and the second as a regular string.
