@@ -128,3 +128,12 @@ while files:
 vim.command('return [{}]'.format(','.join(repr(x) for x in sorted(accounts))))
 EOM
 endfunction
+
+" Call bean-doctor on the current line and dump output into a scratch buffer
+function! beancount#get_context()
+    let context = system('bean-doctor context ' . expand('%') . ' ' . line('.'))
+    botright new
+    setlocal buftype=nofile bufhidden=hide noswapfile
+    call append(0, split(context, '\v\n'))
+    normal! gg
+endfunction

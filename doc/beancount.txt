@@ -50,6 +50,16 @@ COMMANDS                                              *beancount-commands*
                         vnoremap <buffer> <leader>= :AlignCommodity<CR>
 <
 
+                                                      *beancount-:GetContext*
+:GetContext         Uses bean-doctor context to display the context of the
+                    current line.
+
+                    You can use the following normal mode remap to open the
+                    context of the line you're currently on: >
+
+                        nnoremap <buffer> <LocalLeader>c :GetContext<CR>
+<
+
 
 
 COMPLETION                                           *beancount-completion*
