@@ -28,5 +28,8 @@ endif
 command! -buffer -range AlignCommodity
             \ :call beancount#align_commodity(<line1>, <line2>)
 
+command! -buffer -range GetContext
+            \ :call beancount#get_context()
+
 " Omnifunc for account completion.
 setl omnifunc=beancount#complete_account
