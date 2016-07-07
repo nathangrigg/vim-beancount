@@ -161,47 +161,6 @@ function! beancount#complete_account(base)
     return l:matches
 endfunction
 
-" Get list of acounts.
-function! beancount#find_accounts(root_file)
-    python << EOM
-import collections
-import os
-import re
-import sys
-import vim
-
-RE_INCLUDE = re.compile(r'^include\s+"([^\n"]+)"')
-RE_ACCOUNT = re.compile(r'^\d{4,}-\d{2}-\d{2}\s+open\s+(\S+)')
-
-def combine_paths(old, new):
-    return os.path.normpath(
-        new if os.path.isabs(new) else os.path.join(old, new))
-
-def parse_file(fh, files, accounts):
-    for line in fh:
-        m = RE_INCLUDE.match(line)
-        if m: files.append(combine_paths(os.path.dirname(fh.name), m.group(1)))
-        m = RE_ACCOUNT.match(line)
-        if m: accounts.add(m.group(1))
-
-files = collections.deque([vim.eval("a:root_file")])
-accounts = set()
-seen = set()
-while files:
-    current = files.popleft()
-    if current in seen:
-        continue
-    seen.add(current)
-    try:
-        with open(current, 'r') as fh:
-            parse_file(fh, files, accounts)
-    except IOError as err:
-        pass
-
-vim.command('return [{}]'.format(','.join(repr(x) for x in sorted(accounts))))
-EOM
-endfunction
-
 function! beancount#query_single(root_file, query)
 let tagoutput = system('bean-query ' . a:root_file . ' "' . a:query . '" | tail -n +3')
 python << EOF
@@ -212,6 +171,11 @@ taglist = [y for y in (x.strip() for x in tagoutput.split('\n')) if y != '']
 
 vim.command('return [{}]'.format(','.join(repr(x) for x in sorted(taglist))))
 EOF
+endfunction
+
+" Get list of accounts.
+function! beancount#find_accounts(root_file)
+    return beancount#query_single(a:root_file, 'select distinct account;')
 endfunction
 
 " Get list of tags.
