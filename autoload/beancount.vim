@@ -75,12 +75,13 @@ function! beancount#complete(findstart, base)
     endif
 
     let l:first = strpart(a:base, 0, 1)
+    let l:rest = strpart(a:base, 1)
     if l:first == "#"
         call beancount#load_tags()
-        return beancount#complete_basic(b:beancount_tags, a:base)
+        return beancount#complete_basic(b:beancount_tags, l:rest, '#')
     elseif l:first == "^"
         call beancount#load_links()
-        return beancount#complete_basic(b:beancount_links, a:base)
+        return beancount#complete_basic(b:beancount_links, l:rest, '^')
     else
         call beancount#load_accounts()
         return beancount#complete_account(a:base)
@@ -116,10 +117,10 @@ function! beancount#load_links()
 endfunction
 
 " General completion function
-function! beancount#complete_basic(input, base)
+function! beancount#complete_basic(input, base, prefix)
     let l:matches = filter(copy(a:input), 's:startswith(v:val, a:base)')
 
-    return l:matches
+    return map(l:matches, 'a:prefix . v:val')
 endfunction
 
 " Complete account name.
@@ -186,30 +187,26 @@ vim.command('return [{}]'.format(','.join(repr(x) for x in sorted(accounts))))
 EOM
 endfunction
 
-" Get list of tags.
-function! beancount#find_tags(root_file)
-let tagoutput = system('bean-query ' . a:root_file . ' "select distinct tags;" | tail -n +3')
+function! beancount#query_single(root_file, query)
+let tagoutput = system('bean-query ' . a:root_file . ' "' . a:query . '" | tail -n +3')
 python << EOF
 import vim
 
 tagoutput = vim.eval("tagoutput")
 taglist = [y for y in (x.strip() for x in tagoutput.split('\n')) if y != '']
 
-vim.command('return [{}]'.format(','.join(repr('#' + x) for x in sorted(taglist))))
+vim.command('return [{}]'.format(','.join(repr(x) for x in sorted(taglist))))
 EOF
+endfunction
+
+" Get list of tags.
+function! beancount#find_tags(root_file)
+    return beancount#query_single(a:root_file, 'select distinct tags;')
 endfunction
 
 " Get list of links.
 function! beancount#find_links(root_file)
-let tagoutput = system('bean-query ' . a:root_file . ' "select distinct links;" | tail -n +3')
-python << EOF
-import vim
-
-tagoutput = vim.eval("tagoutput")
-taglist = [y for y in (x.strip() for x in tagoutput.split('\n')) if y != '']
-
-vim.command('return [{}]'.format(','.join(repr('^' + x) for x in sorted(taglist))))
-EOF
+    return beancount#query_single(a:root_file, 'select distinct links;')
 endfunction
 
 " Call bean-doctor on the current line and dump output into a scratch buffer
