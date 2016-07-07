@@ -74,6 +74,14 @@ function! beancount#complete(findstart, base)
         return beancount#complete_basic(s:directives, a:base)
     endif
 
+    let l:two_tokens = searchpos('\S\+\s', "bn", line("."))[1]
+    let l:prev_token = strpart(getline("."), l:two_tokens, getpos(".")[2] - l:two_tokens)
+    " Match curriences if previous token is number
+    if l:prev_token =~ '^\d\+\([\.,]\d\+\)*'
+        call beancount#load_currencies()
+        return beancount#complete_basic(b:beancount_currencies, a:base, '')
+    endif
+
     let l:first = strpart(a:base, 0, 1)
     let l:rest = strpart(a:base, 1)
     if l:first == "#"
@@ -113,6 +121,13 @@ function! beancount#load_links()
     if !exists('b:beancount_links')
         let l:root = s:get_root()
         let b:beancount_links = beancount#find_links(l:root)
+    endif
+endfunction
+
+function! beancount#load_currencies()
+    if !exists('b:beancount_currencies')
+        let l:root = s:get_root()
+        let b:beancount_currencies = beancount#find_currencies(l:root)
     endif
 endfunction
 
@@ -207,6 +222,11 @@ endfunction
 " Get list of links.
 function! beancount#find_links(root_file)
     return beancount#query_single(a:root_file, 'select distinct links;')
+endfunction
+
+" Get list of currencies.
+function! beancount#find_currencies(root_file)
+    return beancount#query_single(a:root_file, 'select distinct currency;')
 endfunction
 
 " Call bean-doctor on the current line and dump output into a scratch buffer
