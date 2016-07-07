@@ -90,6 +90,9 @@ function! beancount#complete(findstart, base)
     elseif l:first == "^"
         call beancount#load_links()
         return beancount#complete_basic(b:beancount_links, l:rest, '^')
+    elseif l:first == '"'
+        call beancount#load_payees()
+        return beancount#complete_basic(b:beancount_payees, l:rest, '"')
     else
         call beancount#load_accounts()
         return beancount#complete_account(a:base)
@@ -128,6 +131,13 @@ function! beancount#load_currencies()
     if !exists('b:beancount_currencies')
         let l:root = s:get_root()
         let b:beancount_currencies = beancount#find_currencies(l:root)
+    endif
+endfunction
+
+function! beancount#load_payees()
+    if !exists('b:beancount_payees')
+        let l:root = s:get_root()
+        let b:beancount_payees = beancount#find_payees(l:root)
     endif
 endfunction
 
@@ -191,6 +201,11 @@ endfunction
 " Get list of currencies.
 function! beancount#find_currencies(root_file)
     return beancount#query_single(a:root_file, 'select distinct currency;')
+endfunction
+
+" Get list of payees.
+function! beancount#find_payees(root_file)
+    return beancount#query_single(a:root_file, 'select distinct payee;')
 endfunction
 
 " Call bean-doctor on the current line and dump output into a scratch buffer
