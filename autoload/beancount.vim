@@ -68,23 +68,54 @@ function! beancount#complete(findstart, base)
 
     let l:first = strpart(a:base, 0, 1)
     if l:first == "#"
-        return beancount#complete_tag(a:base)
+        call beancount#load_tags()
+        return beancount#complete_basic(b:beancount_tags, a:base)
+    elseif l:first == "^"
+        call beancount#load_links()
+        return beancount#complete_basic(b:beancount_links, a:base)
     else
+        call beancount#load_accounts()
         return beancount#complete_account(a:base)
     endif
 endfunction
 
-" Complete account name.
-function! beancount#complete_account(base)
+function! s:get_root()
+    if exists('b:beancount_root')
+        return b:beancount_root
+    endif
+    return expand('%')
+endfunction
+
+function! beancount#load_accounts()
     if !exists('b:beancount_accounts')
-        if exists('b:beancount_root')
-            let l:root = b:beancount_root
-        else
-            let l:root = expand('%')
-        endif
+        let l:root = s:get_root()
         let b:beancount_accounts = beancount#find_accounts(l:root)
     endif
+endfunction
 
+function! beancount#load_tags()
+    if !exists('b:beancount_tags')
+        let l:root = s:get_root()
+        let b:beancount_tags = beancount#find_tags(l:root)
+    endif
+endfunction
+
+function! beancount#load_links()
+    if !exists('b:beancount_links')
+        let l:root = s:get_root()
+        let b:beancount_links = beancount#find_links(l:root)
+    endif
+endfunction
+
+" General completion function
+function! beancount#complete_basic(input, base)
+    let l:matches = filter(copy(a:input), 's:startswith(v:val, a:base)')
+
+    return l:matches
+endfunction
+
+" Complete account name.
+function! beancount#complete_account(base)
     if g:beancount_account_completion ==? 'chunks'
         let l:pattern = '^\V' . substitute(a:base, ":", '\\[^:]\\*:', "g") . '\[^:]\*'
     else
@@ -147,22 +178,6 @@ vim.command('return [{}]'.format(','.join(repr(x) for x in sorted(accounts))))
 EOM
 endfunction
 
-" Complete tag.
-function! beancount#complete_tag(base)
-    if !exists('b:beancount_tags')
-        if exists('b:beancount_root')
-            let l:root = b:beancount_root
-        else
-            let l:root = expand('%')
-        endif
-        let b:beancount_tags = beancount#find_tags(l:root)
-    endif
-
-    let l:matches = filter(b:beancount_tags, 's:startswith(v:val, a:base)')
-
-    return l:matches
-endfunction
-
 " Get list of tags.
 function! beancount#find_tags(root_file)
 let tagoutput = system('bean-query ' . a:root_file . ' "select distinct tags;" | tail -n +3')
@@ -173,6 +188,19 @@ tagoutput = vim.eval("tagoutput")
 taglist = [y for y in (x.strip() for x in tagoutput.split('\n')) if y != '']
 
 vim.command('return [{}]'.format(','.join(repr('#' + x) for x in sorted(taglist))))
+EOF
+endfunction
+
+" Get list of links.
+function! beancount#find_links(root_file)
+let tagoutput = system('bean-query ' . a:root_file . ' "select distinct links;" | tail -n +3')
+python << EOF
+import vim
+
+tagoutput = vim.eval("tagoutput")
+taglist = [y for y in (x.strip() for x in tagoutput.split('\n')) if y != '']
+
+vim.command('return [{}]'.format(','.join(repr('^' + x) for x in sorted(taglist))))
 EOF
 endfunction
 
