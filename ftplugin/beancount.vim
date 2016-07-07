@@ -32,4 +32,4 @@ command! -buffer -range GetContext
             \ :call beancount#get_context()
 
 " Omnifunc for account completion.
-setl omnifunc=beancount#complete_account
+setl omnifunc=beancount#complete

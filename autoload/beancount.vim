@@ -1,3 +1,9 @@
+" Equivalent to python's startswith
+" Matches based on user's ignorecase preference
+function! s:startswith(string,prefix)
+  return strpart(a:string, 0, strlen(a:prefix)) == a:prefix
+endfunction
+
 " Align currency on decimal point.
 function! beancount#align_commodity(line1, line2)
     " Saving cursor position to adjust it if necessary.
@@ -47,8 +53,10 @@ function! s:sort_accounts_by_depth(name1, name2)
   return depth1 == depth2 ? 0 : depth1 > depth2 ? 1 : -1
 endfunction
 
-" Complete account name.
-function! beancount#complete_account(findstart, base)
+" ------------------------------
+" Completion functions
+" ------------------------------
+function! beancount#complete(findstart, base)
     if a:findstart
         let l:col = searchpos('\s', "bn", line("."))[1]
         if col == 0
@@ -58,6 +66,16 @@ function! beancount#complete_account(findstart, base)
         endif
     endif
 
+    let l:first = strpart(a:base, 0, 1)
+    if l:first == "#"
+        return beancount#complete_tag(a:base)
+    else
+        return beancount#complete_account(a:base)
+    endif
+endfunction
+
+" Complete account name.
+function! beancount#complete_account(base)
     if !exists('b:beancount_accounts')
         if exists('b:beancount_root')
             let l:root = b:beancount_root
@@ -127,6 +145,35 @@ while files:
 
 vim.command('return [{}]'.format(','.join(repr(x) for x in sorted(accounts))))
 EOM
+endfunction
+
+" Complete tag.
+function! beancount#complete_tag(base)
+    if !exists('b:beancount_tags')
+        if exists('b:beancount_root')
+            let l:root = b:beancount_root
+        else
+            let l:root = expand('%')
+        endif
+        let b:beancount_tags = beancount#find_tags(l:root)
+    endif
+
+    let l:matches = filter(b:beancount_tags, 's:startswith(v:val, a:base)')
+
+    return l:matches
+endfunction
+
+" Get list of tags.
+function! beancount#find_tags(root_file)
+let tagoutput = system('bean-query ' . a:root_file . ' "select distinct tags;" | tail -n +3')
+python << EOF
+import vim
+
+tagoutput = vim.eval("tagoutput")
+taglist = [y for y in (x.strip() for x in tagoutput.split('\n')) if y != '']
+
+vim.command('return [{}]'.format(','.join(repr('#' + x) for x in sorted(taglist))))
+EOF
 endfunction
 
 " Call bean-doctor on the current line and dump output into a scratch buffer
