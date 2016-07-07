@@ -53,6 +53,8 @@ function! s:sort_accounts_by_depth(name1, name2)
   return depth1 == depth2 ? 0 : depth1 > depth2 ? 1 : -1
 endfunction
 
+let s:directives = ["open", "close", "commodity", "txn", "balance", "pad", "note", "document", "price", "event", "query", "custom"]
+
 " ------------------------------
 " Completion functions
 " ------------------------------
@@ -64,6 +66,12 @@ function! beancount#complete(findstart, base)
         else
             return col
         endif
+    endif
+
+    let l:partial_line = strpart(getline("."), 0, getpos(".")[2])
+    " Match directive types
+    if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d \S*$'
+        return beancount#complete_basic(s:directives, a:base)
     endif
 
     let l:first = strpart(a:base, 0, 1)
