@@ -71,7 +71,7 @@ function! beancount#complete(findstart, base)
     let l:partial_line = strpart(getline("."), 0, getpos(".")[2])
     " Match directive types
     if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d \S*$'
-        return beancount#complete_basic(s:directives, a:base)
+        return beancount#complete_basic(s:directives, a:base, '')
     endif
 
     let l:two_tokens = searchpos('\S\+\s', "bn", line("."))[1]
