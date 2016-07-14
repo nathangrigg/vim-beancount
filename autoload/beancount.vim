@@ -172,12 +172,16 @@ function! beancount#complete_account(base)
 endfunction
 
 function! beancount#query_single(root_file, query)
-let tagoutput = system('bean-query ' . a:root_file . ' "' . a:query . '" | tail -n +3')
 python << EOF
 import vim
+import subprocess
+import os
 
-tagoutput = vim.eval("tagoutput")
-taglist = [y for y in (x.strip() for x in tagoutput.split('\n')) if y != '']
+# We intentionally want to ignore stderr so it doesn't mess up our query processing
+tagoutput = subprocess.check_output(['bean-query', vim.eval('a:root_file'), vim.eval('a:query')], stderr=open(os.devnull, 'w')).split('\n')
+tagoutput = tagoutput[3:]
+
+taglist = [y for y in (x.strip() for x in tagoutput) if y]
 
 vim.command('return [{}]'.format(','.join(repr(x) for x in sorted(taglist))))
 EOF
