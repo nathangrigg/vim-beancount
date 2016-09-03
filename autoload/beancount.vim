@@ -1,6 +1,6 @@
 " Equivalent to python's startswith
 " Matches based on user's ignorecase preference
-function! s:startswith(string,prefix)
+function! s:startswith(string, prefix)
   return strpart(a:string, 0, strlen(a:prefix)) == a:prefix
 endfunction
 
@@ -178,12 +178,13 @@ import subprocess
 import os
 
 # We intentionally want to ignore stderr so it doesn't mess up our query processing
-tagoutput = subprocess.check_output(['bean-query', vim.eval('a:root_file'), vim.eval('a:query')], stderr=open(os.devnull, 'w')).split('\n')
-tagoutput = tagoutput[3:]
+output = subprocess.check_output(['bean-query', vim.eval('a:root_file'), vim.eval('a:query')], stderr=open(os.devnull, 'w')).split('\n')
+print(output)
+output = output[2:]
 
-taglist = [y for y in (x.strip() for x in tagoutput) if y]
+result_list = [y for y in (x.strip() for x in output) if y]
 
-vim.command('return [{}]'.format(','.join(repr(x) for x in sorted(taglist))))
+vim.command('return [{}]'.format(','.join(repr(x) for x in sorted(result_list))))
 EOF
 endfunction
 
