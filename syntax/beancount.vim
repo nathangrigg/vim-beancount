@@ -51,7 +51,7 @@ syn region beanPushTag matchgroup=beanKeyword start="\v^(push|pop)tag" end="$"
 syn region beanPad matchgroup=beanKeyword start="pad" end="$" contained
             \ keepend contains=beanAccount,beanComment
 
-syn region beanTxn matchgroup=beanKeyword start="\v(txn)?\s+[*!]" skip="^\s"
+syn region beanTxn matchgroup=beanKeyword start="\v\s+(txn|[*!])" skip="^\s"
             \ end="^" keepend contained fold
             \ contains=beanString,beanPost,beanComment,beanTag,beanLink,beanMeta
 syn region beanPost start="^\v\C\s+[A-Z]@=" end="$"
