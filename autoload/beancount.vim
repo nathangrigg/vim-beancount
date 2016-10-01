@@ -21,7 +21,7 @@ function! beancount#align_commodity(line1, line2)
         " This matches an account name followed by a space. There may be
         " some conflicts with non-transaction syntax that I don't know about.
         " It won't match a comment or any non-indented line.
-        let end_acc = matchend(s, '^\v([-\d]+\s+(balance|price))? +\S+[^:] ')
+        let end_acc = matchend(s, '^\v([\-/[:digit:]]+\s+(balance|price))? +\S+[^:] ')
         if end_acc < 0 | continue | endif
         " Where does commodity amount begin?
         let end_space = matchend(s, '^ *', end_acc)
