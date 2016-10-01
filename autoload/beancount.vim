@@ -9,10 +9,7 @@ function! beancount#align_commodity(line1, line2)
     " Saving cursor position to adjust it if necessary.
     let cursor_col = col('.')
     let cursor_line = line('.')
-    " This matches the line up to the first dot (or other separator),
-    " excluding comments.
-    " Note very nomagic so that the separator is not interpreted as regex.
-    let separator_regex = '^\V\[^;]\{-}' . g:beancount_decimal_separator
+
     " This lets me increment at start of loop, because of continue statements.
     let i = a:line1 - 1
     while i < a:line2
@@ -25,12 +22,10 @@ function! beancount#align_commodity(line1, line2)
         if end_acc < 0 | continue | endif
         " Where does commodity amount begin?
         let end_space = matchend(s, '^ *', end_acc)
-        " Find the first decimal point, not counting comments.
-        let separator = matchend(s, separator_regex, end_space)
-        if separator < 0
-            " If there is no separator, pretend there's one after the last digit.
-            let separator = matchend(s, '^\v[^;]*\d+') + 1
-        endif
+
+        " Now look for a minus sign and a number, and align on the next column.
+        let l:comma = g:beancount_decimal_separator == ',' ? '.' : ','
+        let separator = matchend(s, '^\v(-)?[' . l:comma . '[:digit:]]+', end_space) + 1
         if separator < 0 | continue | endif
         let has_spaces = end_space - end_acc
         let need_spaces = g:beancount_separator_col - separator + has_spaces
