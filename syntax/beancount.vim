@@ -19,7 +19,7 @@ syn match beanCurrency "\v\w+" contained
 syn match beanAccount "\v[[:alnum:]]+:[-[:alnum:]:]+" contained
 syn match beanTag "\v#[-[:alnum:]]+" contained
 syn match beanLink "\v\^\S+" contained
-
+syn match beanFlag "\v[!&#?%PSTCURM]" contained
 
 " Most directives start with a date.
 syn match beanDate "^\v\d{4}[-/]\d{2}[-/]\d{2}" skipwhite
@@ -51,11 +51,11 @@ syn region beanPushTag matchgroup=beanKeyword start="\v^(push|pop)tag" end="$"
 syn region beanPad matchgroup=beanKeyword start="pad" end="$" contained
             \ keepend contains=beanAccount,beanComment
 
-syn region beanTxn matchgroup=beanKeyword start="\v\s+(txn|[*!])" skip="^\s"
+syn region beanTxn matchgroup=beanKeyword start="\v\s+(txn|[!&#?%PSTCURM])" skip="^\s"
             \ end="^" keepend contained fold
             \ contains=beanString,beanPost,beanComment,beanTag,beanLink,beanMeta
-syn region beanPost start="^\v\C\s+[A-Z]@=" end="$"
-            \ contains=beanAccount,beanAmount,beanComment,beanCost,beanPrice
+syn region beanPost start="^\v\C\s+(([!&#?%PSTCURM]\s+)?[A-Z])@=" end="$"
+            \ contains=beanFlag,beanAccount,beanAmount,beanComment,beanCost,beanPrice
 syn region beanMeta matchgroup=beanTag start="^\v\C\s+[a-z][-_a-zA-Z0-9]*:(\s|$)@=" end="$"
 
 syn region beanCost start="{" end="}" contains=beanAmount contained
@@ -86,3 +86,4 @@ highlight default link beanPrice Number
 highlight default link beanTag Comment
 highlight default link beanLink Comment
 highlight default link beanMeta Comment
+highlight default link beanFlag Keyword
