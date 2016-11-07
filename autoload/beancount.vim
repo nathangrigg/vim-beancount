@@ -81,6 +81,15 @@ function! beancount#complete(findstart, base)
     " If we are using python3, now is a good time to load everything
     call beancount#load_everything()
 
+    " Split out the first character (for cases where we don't want to match the
+    " leading character: ", #, etc)
+    let l:first = strpart(a:base, 0, 1)
+    let l:rest = strpart(a:base, 1)
+
+    if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d event $' && l:first == '"'
+        return beancount#complete_basic(b:beancount_events, l:rest, '"')
+    endif
+
     let l:two_tokens = searchpos('\S\+\s', "bn", line("."))[1]
     let l:prev_token = strpart(getline("."), l:two_tokens, getpos(".")[2] - l:two_tokens)
     " Match curriences if previous token is number
@@ -89,8 +98,6 @@ function! beancount#complete(findstart, base)
         return beancount#complete_basic(b:beancount_currencies, a:base, '')
     endif
 
-    let l:first = strpart(a:base, 0, 1)
-    let l:rest = strpart(a:base, 1)
     if l:first == "#"
         call beancount#load_tags()
         return beancount#complete_basic(b:beancount_tags, l:rest, '#')
@@ -123,6 +130,7 @@ from beancount.core import data
 
 accounts = set()
 currencies = set()
+events = set()
 links = set()
 payees = set()
 tags = set()
@@ -135,6 +143,8 @@ for index, entry in enumerate(entries):
             currencies.update(entry.currencies)
     elif isinstance(entry, data.Commodity):
         currencies.add(entry.currency)
+    elif isinstance(entry, data.Event):
+        events.add(entry.type)
     elif isinstance(entry, data.Transaction):
         if entry.tags:
             tags.update(entry.tags)
@@ -145,6 +155,7 @@ for index, entry in enumerate(entries):
 
 vim.command('let b:beancount_accounts = [{}]'.format(','.join(repr(x) for x in sorted(accounts))))
 vim.command('let b:beancount_currencies = [{}]'.format(','.join(repr(x) for x in sorted(currencies))))
+vim.command('let b:beancount_events = [{}]'.format(','.join(repr(x) for x in sorted(events))))
 vim.command('let b:beancount_links = [{}]'.format(','.join(repr(x) for x in sorted(links))))
 vim.command('let b:beancount_payees = [{}]'.format(','.join(repr(x) for x in sorted(payees))))
 vim.command('let b:beancount_tags = [{}]'.format(','.join(repr(x) for x in sorted(tags))))
