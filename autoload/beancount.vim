@@ -72,9 +72,9 @@ function! beancount#complete(findstart, base)
         endif
     endif
 
-    let l:partial_line = strpart(getline("."), 0, getpos(".")[2])
+    let l:partial_line = strpart(getline("."), 0, getpos(".")[2]-1)
     " Match directive types
-    if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d \S*$'
+    if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d $'
         return beancount#complete_basic(s:directives, a:base, '')
     endif
 
