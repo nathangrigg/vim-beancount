@@ -174,7 +174,6 @@ import os
 
 # We intentionally want to ignore stderr so it doesn't mess up our query processing
 output = subprocess.check_output(['bean-query', vim.eval('a:root_file'), vim.eval('a:query')], stderr=open(os.devnull, 'w')).split('\n')
-print(output)
 output = output[2:]
 
 result_list = [y for y in (x.strip() for x in output) if y]
