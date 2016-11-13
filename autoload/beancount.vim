@@ -121,7 +121,7 @@ function! s:get_root()
 endfunction
 
 function! beancount#load_everything()
-    if s:using_python3
+    if s:using_python3 && !exists('b:beancount_loaded')
         let l:root = s:get_root()
 python3 << EOF
 import vim
@@ -159,6 +159,7 @@ vim.command('let b:beancount_events = [{}]'.format(','.join(repr(x) for x in sor
 vim.command('let b:beancount_links = [{}]'.format(','.join(repr(x) for x in sorted(links))))
 vim.command('let b:beancount_payees = [{}]'.format(','.join(repr(x) for x in sorted(payees))))
 vim.command('let b:beancount_tags = [{}]'.format(','.join(repr(x) for x in sorted(tags))))
+vim.command('let b:beancount_loaded = v:true'.format(','.join(repr(x) for x in sorted(tags))))
 EOF
     endif
 endfunction
