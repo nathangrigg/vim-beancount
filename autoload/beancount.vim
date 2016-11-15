@@ -1,3 +1,12 @@
+function! s:UsingPython3()
+  if has('python3')
+    return 1
+  endif
+  return 0
+endfunction
+
+let s:using_python3 = s:UsingPython3()
+
 " Equivalent to python's startswith
 " Matches based on user's ignorecase preference
 function! s:startswith(string, prefix)
@@ -63,10 +72,22 @@ function! beancount#complete(findstart, base)
         endif
     endif
 
-    let l:partial_line = strpart(getline("."), 0, getpos(".")[2])
+    let l:partial_line = strpart(getline("."), 0, getpos(".")[2]-1)
     " Match directive types
-    if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d \S*$'
+    if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d $'
         return beancount#complete_basic(s:directives, a:base, '')
+    endif
+
+    " If we are using python3, now is a good time to load everything
+    call beancount#load_everything()
+
+    " Split out the first character (for cases where we don't want to match the
+    " leading character: ", #, etc)
+    let l:first = strpart(a:base, 0, 1)
+    let l:rest = strpart(a:base, 1)
+
+    if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d event $' && l:first == '"'
+        return beancount#complete_basic(b:beancount_events, l:rest, '"')
     endif
 
     let l:two_tokens = searchpos('\S\+\s', "bn", line("."))[1]
@@ -77,8 +98,6 @@ function! beancount#complete(findstart, base)
         return beancount#complete_basic(b:beancount_currencies, a:base, '')
     endif
 
-    let l:first = strpart(a:base, 0, 1)
-    let l:rest = strpart(a:base, 1)
     if l:first == "#"
         call beancount#load_tags()
         return beancount#complete_basic(b:beancount_tags, l:rest, '#')
@@ -101,36 +120,80 @@ function! s:get_root()
     return expand('%')
 endfunction
 
+function! beancount#load_everything()
+    if s:using_python3 && !exists('b:beancount_loaded')
+        let l:root = s:get_root()
+python3 << EOF
+import vim
+from beancount import loader
+from beancount.core import data
+
+accounts = set()
+currencies = set()
+events = set()
+links = set()
+payees = set()
+tags = set()
+
+entries, errors, options_map = loader.load_file(vim.eval('l:root'))
+for index, entry in enumerate(entries):
+    if isinstance(entry, data.Open):
+        accounts.add(entry.account)
+        if entry.currencies:
+            currencies.update(entry.currencies)
+    elif isinstance(entry, data.Commodity):
+        currencies.add(entry.currency)
+    elif isinstance(entry, data.Event):
+        events.add(entry.type)
+    elif isinstance(entry, data.Transaction):
+        if entry.tags:
+            tags.update(entry.tags)
+        if entry.links:
+            links.update(entry.links)
+        if entry.payee:
+            payees.add(entry.payee)
+
+vim.command('let b:beancount_accounts = [{}]'.format(','.join(repr(x) for x in sorted(accounts))))
+vim.command('let b:beancount_currencies = [{}]'.format(','.join(repr(x) for x in sorted(currencies))))
+vim.command('let b:beancount_events = [{}]'.format(','.join(repr(x) for x in sorted(events))))
+vim.command('let b:beancount_links = [{}]'.format(','.join(repr(x) for x in sorted(links))))
+vim.command('let b:beancount_payees = [{}]'.format(','.join(repr(x) for x in sorted(payees))))
+vim.command('let b:beancount_tags = [{}]'.format(','.join(repr(x) for x in sorted(tags))))
+vim.command('let b:beancount_loaded = v:true'.format(','.join(repr(x) for x in sorted(tags))))
+EOF
+    endif
+endfunction
+
 function! beancount#load_accounts()
-    if !exists('b:beancount_accounts')
+    if !s:using_python3 && !exists('b:beancount_accounts')
         let l:root = s:get_root()
         let b:beancount_accounts = beancount#find_accounts(l:root)
     endif
 endfunction
 
 function! beancount#load_tags()
-    if !exists('b:beancount_tags')
+    if !s:using_python3 && !exists('b:beancount_tags')
         let l:root = s:get_root()
         let b:beancount_tags = beancount#find_tags(l:root)
     endif
 endfunction
 
 function! beancount#load_links()
-    if !exists('b:beancount_links')
+    if !s:using_python3 && !exists('b:beancount_links')
         let l:root = s:get_root()
         let b:beancount_links = beancount#find_links(l:root)
     endif
 endfunction
 
 function! beancount#load_currencies()
-    if !exists('b:beancount_currencies')
+    if !s:using_python3 && !exists('b:beancount_currencies')
         let l:root = s:get_root()
         let b:beancount_currencies = beancount#find_currencies(l:root)
     endif
 endfunction
 
 function! beancount#load_payees()
-    if !exists('b:beancount_payees')
+    if !s:using_python3 && !exists('b:beancount_payees')
         let l:root = s:get_root()
         let b:beancount_payees = beancount#find_payees(l:root)
     endif
@@ -174,7 +237,6 @@ import os
 
 # We intentionally want to ignore stderr so it doesn't mess up our query processing
 output = subprocess.check_output(['bean-query', vim.eval('a:root_file'), vim.eval('a:query')], stderr=open(os.devnull, 'w')).split('\n')
-print(output)
 output = output[2:]
 
 result_list = [y for y in (x.strip() for x in output) if y]
