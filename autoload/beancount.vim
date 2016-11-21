@@ -113,7 +113,7 @@ function! beancount#complete(findstart, base)
     endif
 endfunction
 
-function! s:get_root()
+function! beancount#get_root()
     if exists('b:beancount_root')
         return b:beancount_root
     endif
@@ -122,7 +122,7 @@ endfunction
 
 function! beancount#load_everything()
     if s:using_python3 && !exists('b:beancount_loaded')
-        let l:root = s:get_root()
+        let l:root = beancount#get_root()
 python3 << EOF
 import vim
 from beancount import loader
@@ -166,35 +166,35 @@ endfunction
 
 function! beancount#load_accounts()
     if !s:using_python3 && !exists('b:beancount_accounts')
-        let l:root = s:get_root()
+        let l:root = beancount#get_root()
         let b:beancount_accounts = beancount#find_accounts(l:root)
     endif
 endfunction
 
 function! beancount#load_tags()
     if !s:using_python3 && !exists('b:beancount_tags')
-        let l:root = s:get_root()
+        let l:root = beancount#get_root()
         let b:beancount_tags = beancount#find_tags(l:root)
     endif
 endfunction
 
 function! beancount#load_links()
     if !s:using_python3 && !exists('b:beancount_links')
-        let l:root = s:get_root()
+        let l:root = beancount#get_root()
         let b:beancount_links = beancount#find_links(l:root)
     endif
 endfunction
 
 function! beancount#load_currencies()
     if !s:using_python3 && !exists('b:beancount_currencies')
-        let l:root = s:get_root()
+        let l:root = beancount#get_root()
         let b:beancount_currencies = beancount#find_currencies(l:root)
     endif
 endfunction
 
 function! beancount#load_payees()
     if !s:using_python3 && !exists('b:beancount_payees')
-        let l:root = s:get_root()
+        let l:root = beancount#get_root()
         let b:beancount_payees = beancount#find_payees(l:root)
     endif
 endfunction
