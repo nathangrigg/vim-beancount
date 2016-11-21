@@ -54,7 +54,7 @@ class Source(Base):
         payees = set()
         tags = set()
         if HAS_BEANCOUNT:
-            entries, _, _ = load_file(self.vim.eval("expand('%')"))
+            entries, _, _ = load_file(self.vim.eval("beancount#get_root()"))
         else:
             entries = []
 
