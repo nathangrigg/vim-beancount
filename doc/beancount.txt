@@ -64,8 +64,7 @@ COMMANDS                                              *beancount-commands*
 OPTIONS                                              *beancount-options*
 
 *g:beancount_account_completion*
-  Sets the behaviour of the completion. See |beancount-completion|.
-  Can be either 'default' or 'chunks'.
+  See |beancount-completion|. Can be either 'default' or 'chunks'.
 
   Default value: 'default'
 
@@ -94,10 +93,17 @@ OPTIONS                                              *beancount-options*
 
 COMPLETION                                           *beancount-completion*
 
-You can complete account names using CTRL-X CTRL-O. |i_CTRL-X_CTRL-O|
-Accounts must have their `open` directive in the current file. Completion is
-always case sensitive and exact. If the base string includes colons, each
-colon-separated piece can separately match a piece of the account.
+The plugin sets 'omnifunc' to provide omni completion for account names, tags,
+links, and payees. Omni completion is accessible with |i_CTRL-X_CTRL-O|.
+
+Completion works for values defined |b:beancount_root| and included files.
+
+Account Completion~
+                                                     *beancount-complete-accounts*
+
+Completion is always case sensitive and exact. If the base string includes
+colons, each colon-separated piece can separately match a piece of the
+account.
 
 For example, `Ex:Other` would complete to `Expenses:Donations:Other` or
 `Liabilities:AmericanExpress:InterestOther`.
@@ -117,6 +123,12 @@ This behavior can be enabled using >
 
         let g:beancount_detailed_first = 1
 <
+Deoplete~
+                                                    *beancount-complete-deoplete*
+
+The plugin ships with a source for the deoplete.nvim, which provides
+asynchronous autocompletion. This should just work if deoplete is enabled. The
+options for the account completion do not work for the deoplete source.
 
 SYNTAX                                              *beancount-syntax*
 
