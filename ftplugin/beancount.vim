@@ -7,7 +7,10 @@ endif
 let b:did_ftplugin = 1
 let b:undo_ftplugin = "setlocal foldmethod< comments< commentstring<"
 
-setl foldmethod=syntax
+if !get(g:, "vim_beancount_folding_disabled", 0)
+    setl foldmethod=syntax
+endif
+
 setl comments=b:;
 setl commentstring=;%s
 compiler beancount
