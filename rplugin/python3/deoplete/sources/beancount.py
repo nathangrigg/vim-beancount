@@ -36,17 +36,17 @@ class Source(Base):
 
     def gather_candidates(self, context):
         if re.match(r'^\d{4}[/-]\d\d[/-]\d\d \w*$', context['input']):
-            return DIRECTIVES
+            return [{'word': x, 'kind': 'directive'} for x in DIRECTIVES]
         if not context['complete_str']:
             return []
         first = context['complete_str'][0]
         if first == '#':
-            return ['#' + w for w in self._tags]
+            return [{'word': '#' + w, 'kind': 'tag'} for w in self._tags]
         elif first == '^':
-            return ['^' + w for w in self._links]
+            return [{'word': '^' + w, 'kind': 'link'} for w in self._links]
         elif first == '"':
-            return ['"{}"'.format(w) for w in self._payees]
-        return self._accounts
+            return [{'word': '"{}"'.format(w), 'kind': 'payee'} for w in self._payees]
+        return [{'word': x, 'kind': 'account'} for x in self._accounts]
 
     def __make_cache(self, context):
         accounts = set()
