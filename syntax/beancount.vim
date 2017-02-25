@@ -19,7 +19,10 @@ syn match beanCurrency "\v\w+" contained
 syn match beanAccount "\v[[:alnum:]]+:[-[:alnum:]:]+" contained
 syn match beanTag "\v#[-[:alnum:]]+" contained
 syn match beanLink "\v\^\S+" contained
-syn match beanFlag "\v[*!&#?%PSTCURM]" contained
+" We must require a space after the flag because you can have flags per
+" transaction leg, and the letter-based flags might get confused with the
+" start of an account name.
+syn match beanFlag "\v[*!&#?%PSTCURM]\s\@=" contained
 
 " Most directives start with a date.
 syn match beanDate "^\v\d{4}[-/]\d{2}[-/]\d{2}" skipwhite
@@ -54,7 +57,7 @@ syn region beanPad matchgroup=beanKeyword start="pad" end="$" contained
 syn region beanTxn matchgroup=beanKeyword start="\v\s+(txn|[*!&#?%PSTCURM])" skip="^\s"
             \ end="^" keepend contained fold
             \ contains=beanString,beanPost,beanComment,beanTag,beanLink,beanMeta
-syn region beanPost start="^\v\C\s+(([!&#?%PSTCURM]\s+)?[A-Z])@=" end="$"
+syn region beanPost start="^\v\C\s+(([*!&#?%PSTCURM]\s+)?[A-Z])@=" end="$"
             \ contains=beanFlag,beanAccount,beanAmount,beanComment,beanCost,beanPrice
 syn region beanMeta matchgroup=beanTag start="^\v\C\s+[a-z][-_a-zA-Z0-9]*:(\s|$)@=" end="$"
 
