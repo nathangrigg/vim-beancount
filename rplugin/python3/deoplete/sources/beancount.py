@@ -46,9 +46,16 @@ class Source(Base):
         if re.match(r'^(\s)+\w+$', context['input']):
             return [{'word': x, 'kind': 'account'} for x in attrs['accounts']]
         # directive followed by account
-        if re.match(r'(balance|document|note|open|close|pad(\s\S*)?)\s\w+$',
-                    context['input']):
+        if re.search(r'(balance|document|note|open|close|pad(\s\S*)?)\s\w+$',
+                     context['input']):
             return [{'word': x, 'kind': 'account'} for x in attrs['accounts']]
+        # commodity after number
+        if re.search(r'([0-9]+|[0-9][0-9,]+[0-9])(\.[0-9]*)?\s\w+',
+                     context['input']):
+            return [{
+                'word': x,
+                'kind': 'commodity'
+            } for x in attrs['commodities']]
         if not context['complete_str']:
             return []
         first = context['complete_str'][0]
@@ -64,14 +71,15 @@ class Source(Base):
         return []
 
     def __make_cache(self, context):
+        if not HAS_BEANCOUNT:
+            return
+
+        entries, _, options = load_file(self.vim.eval("beancount#get_root()"))
+
         accounts = set()
         links = set()
         payees = set()
         tags = set()
-        if HAS_BEANCOUNT:
-            entries, _, _ = load_file(self.vim.eval("beancount#get_root()"))
-        else:
-            entries = []
 
         for entry in entries:
             if isinstance(entry, Open):
@@ -86,6 +94,7 @@ class Source(Base):
 
         self.attributes = {
             'accounts': sorted(accounts),
+            'commodities': options['commodities'],
             'links': sorted(links),
             'payees': sorted(payees),
             'tags': sorted(tags),
