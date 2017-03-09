@@ -5,7 +5,7 @@ from deoplete.source.base import Base
 
 try:
     from beancount.loader import load_file
-    from beancount.core.data import Open, Transaction
+    from beancount.core import data
     HAS_BEANCOUNT = True
 except ImportError:
     HAS_BEANCOUNT = False
@@ -24,6 +24,7 @@ class Source(Base):
         self.name = 'beancount'
         self.mark = '[bc]'
         self.filetypes = ['beancount']
+        self.rank = 500
         self.min_pattern_length = 0
         self.attributes = collections.defaultdict(list)
 
@@ -49,6 +50,12 @@ class Source(Base):
         if re.search(r'(balance|document|note|open|close|pad(\s\S*)?)\s\w+$',
                      context['input']):
             return [{'word': x, 'kind': 'account'} for x in attrs['accounts']]
+        # events
+        if re.search(r'event "[^"]*$', context['input']):
+            return [{
+                'word': '"{}"'.format(x),
+                'kind': 'event'
+            } for x in attrs['events']]
         # commodity after number
         if re.search(r'([0-9]+|[0-9][0-9,]+[0-9])(\.[0-9]*)?\s\w+',
                      context['input']):
@@ -77,23 +84,27 @@ class Source(Base):
         entries, _, options = load_file(self.vim.eval("beancount#get_root()"))
 
         accounts = set()
+        events = set()
         links = set()
         payees = set()
         tags = set()
 
         for entry in entries:
-            if isinstance(entry, Open):
+            if isinstance(entry, data.Open):
                 accounts.add(entry.account)
-            elif isinstance(entry, Transaction):
+            elif isinstance(entry, data.Transaction):
                 if entry.payee:
                     payees.add(entry.payee)
             if hasattr(entry, 'links') and entry.links:
                 links.update(entry.links)
             if hasattr(entry, 'tags') and entry.tags:
                 tags.update(entry.tags)
+            if isinstance(entry, data.Event):
+                events.add(entry.type)
 
         self.attributes = {
             'accounts': sorted(accounts),
+            'events': sorted(events),
             'commodities': options['commodities'],
             'links': sorted(links),
             'payees': sorted(payees),
