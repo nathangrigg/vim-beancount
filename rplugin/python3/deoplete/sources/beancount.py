@@ -1,3 +1,4 @@
+import collections
 import re
 
 from deoplete.source.base import Base
@@ -9,8 +10,10 @@ try:
 except ImportError:
     HAS_BEANCOUNT = False
 
-DIRECTIVES = ['open', 'close', 'commodity', 'txn', 'balance', 'pad', 'note',
-              'document', 'price', 'event', 'query', 'custom']
+DIRECTIVES = [
+    'open', 'close', 'commodity', 'txn', 'balance', 'pad', 'note', 'document',
+    'price', 'event', 'query', 'custom'
+]
 
 
 class Source(Base):
@@ -22,6 +25,7 @@ class Source(Base):
         self.mark = '[bc]'
         self.filetypes = ['beancount']
         self.min_pattern_length = 0
+        self.attributes = collections.defaultdict(list)
 
     def on_init(self, context):
         if not HAS_BEANCOUNT:
@@ -35,18 +39,29 @@ class Source(Base):
         return m.start() if m else -1
 
     def gather_candidates(self, context):
+        attrs = self.attributes
         if re.match(r'^\d{4}[/-]\d\d[/-]\d\d \w*$', context['input']):
             return [{'word': x, 'kind': 'directive'} for x in DIRECTIVES]
+        # line that starts with whitespace (-> accounts)
+        if re.match(r'^(\s)+\w+$', context['input']):
+            return [{'word': x, 'kind': 'account'} for x in attrs['accounts']]
+        # directive followed by account
+        if re.match(r'(balance|document|note|open|close|pad(\s\S*)?)\s\w+$',
+                    context['input']):
+            return [{'word': x, 'kind': 'account'} for x in attrs['accounts']]
         if not context['complete_str']:
             return []
         first = context['complete_str'][0]
         if first == '#':
-            return [{'word': '#' + w, 'kind': 'tag'} for w in self._tags]
+            return [{'word': '#' + w, 'kind': 'tag'} for w in attrs['tags']]
         elif first == '^':
-            return [{'word': '^' + w, 'kind': 'link'} for w in self._links]
+            return [{'word': '^' + w, 'kind': 'link'} for w in attrs['links']]
         elif first == '"':
-            return [{'word': '"{}"'.format(w), 'kind': 'payee'} for w in self._payees]
-        return [{'word': x, 'kind': 'account'} for x in self._accounts]
+            return [{
+                'word': '"{}"'.format(w),
+                'kind': 'payee'
+            } for w in attrs['payees']]
+        return []
 
     def __make_cache(self, context):
         accounts = set()
@@ -69,7 +84,9 @@ class Source(Base):
             if hasattr(entry, 'tags') and entry.tags:
                 tags.update(entry.tags)
 
-        self._accounts = sorted(accounts)
-        self._links = sorted(links)
-        self._payees = sorted(payees)
-        self._tags = sorted(tags)
+        self.attributes = {
+            'accounts': sorted(accounts),
+            'links': sorted(links),
+            'payees': sorted(payees),
+            'tags': sorted(tags),
+        }
