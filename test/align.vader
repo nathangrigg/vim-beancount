@@ -1,0 +1,27 @@
+Given beancount:
+      metadata: 50
+      Assets:Cash  50
+      Assets:Cash  50.00
+      Assets:Cash         50.00
+      Assets:Cash         50.00 USD
+
+Execute (align):
+  %AlignCommodity
+
+Expect beancount:
+      metadata: 50
+      Assets:Cash                                50
+      Assets:Cash                                50.00
+      Assets:Cash                                50.00
+      Assets:Cash                                50.00 USD
+
+Execute (change alignment column and align again):
+  let g:beancount_separator_col=40
+  %AlignCommodity
+
+Expect beancount:
+      metadata: 50
+      Assets:Cash                      50
+      Assets:Cash                      50.00
+      Assets:Cash                      50.00
+      Assets:Cash                      50.00 USD
