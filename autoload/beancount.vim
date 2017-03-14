@@ -9,33 +9,33 @@ endfunction
 " Align currency on decimal point.
 function! beancount#align_commodity(line1, line2)
     " Saving cursor position to adjust it if necessary.
-    let cursor_col = col('.')
-    let cursor_line = line('.')
+    let l:cursor_col = col('.')
+    let l:cursor_line = line('.')
 
     " This lets me increment at start of loop, because of continue statements.
-    let i = a:line1 - 1
-    while i < a:line2
-        let i += 1
-        let s = getline(i)
+    let l:current_line = a:line1 - 1
+    while l:current_line < a:line2
+        let l:current_line += 1
+        let l:line = getline(l:current_line)
         " This matches an account name followed by a space. There may be
         " some conflicts with non-transaction syntax that I don't know about.
         " It won't match a comment or any non-indented line.
-        let end_acc = matchend(s, '^\v(([\-/[:digit:]]+\s+(balance|price))|\s+[!&#?%PSTCURM])?\s+\S+[^:] ')
-        if end_acc < 0 | continue | endif
+        let l:end_acc = matchend(l:line, '^\v(([\-/[:digit:]]+\s+(balance|price))|\s+[!&#?%PSTCURM])?\s+\S+[^:] ')
+        if l:end_acc < 0 | continue | endif
         " Where does commodity amount begin?
-        let end_space = matchend(s, '^ *', end_acc)
+        let l:end_space = matchend(l:line, '^ *', l:end_acc)
 
         " Now look for a minus sign and a number, and align on the next column.
-        let l:comma = g:beancount_decimal_separator == ',' ? '.' : ','
-        let separator = matchend(s, '^\v(-)?[' . l:comma . '[:digit:]]+', end_space) + 1
-        if separator < 0 | continue | endif
-        let has_spaces = end_space - end_acc
-        let need_spaces = g:beancount_separator_col - separator + has_spaces
-        if need_spaces < 0 | continue | endif
-        call setline(i, s[0 : end_acc - 1] . repeat(" ", need_spaces) . s[ end_space : -1])
-        if i == cursor_line && cursor_col >= end_acc
+        let l:comma = g:beancount_decimal_separator ==# ',' ? '.' : ','
+        let l:separator = matchend(l:line, '^\v(-)?[' . l:comma . '[:digit:]]+', l:end_space) + 1
+        if l:separator < 0 | continue | endif
+        let l:has_spaces = l:end_space - l:end_acc
+        let l:need_spaces = g:beancount_separator_col - l:separator + l:has_spaces
+        if l:need_spaces < 0 | continue | endif
+        call setline(l:current_line, l:line[0 : l:end_acc - 1] . repeat(' ', l:need_spaces) . l:line[ l:end_space : -1])
+        if l:current_line == l:cursor_line && l:cursor_col >= l:end_acc
             " Adjust cursor position for continuity.
-            call cursor(0, cursor_col + need_spaces - has_spaces)
+            call cursor(0, l:cursor_col + l:need_spaces - l:has_spaces)
         endif
     endwhile
 endfunction
