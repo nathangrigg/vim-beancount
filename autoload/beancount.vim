@@ -1,16 +1,9 @@
-function! s:UsingPython3()
-  if has('python3')
-    return 1
-  endif
-  return 0
-endfunction
-
-let s:using_python3 = s:UsingPython3()
+let s:using_python3 = has('python3')
 
 " Equivalent to python's startswith
 " Matches based on user's ignorecase preference
 function! s:startswith(string, prefix)
-  return strpart(a:string, 0, strlen(a:prefix)) == a:prefix
+    return strpart(a:string, 0, strlen(a:prefix)) == a:prefix
 endfunction
 
 " Align currency on decimal point.
@@ -48,31 +41,31 @@ function! beancount#align_commodity(line1, line2)
 endfunction
 
 function! s:count_expression(text, expression)
-  return len(split(a:text, a:expression, 1)) - 1
+    return len(split(a:text, a:expression, 1)) - 1
 endfunction
 
 function! s:sort_accounts_by_depth(name1, name2)
-  let l:depth1 = s:count_expression(a:name1, ':')
-  let l:depth2 = s:count_expression(a:name2, ':')
-  return depth1 == depth2 ? 0 : depth1 > depth2 ? 1 : -1
+    let l:depth1 = s:count_expression(a:name1, ':')
+    let l:depth2 = s:count_expression(a:name2, ':')
+    return l:depth1 == l:depth2 ? 0 : l:depth1 > l:depth2 ? 1 : -1
 endfunction
 
-let s:directives = ["open", "close", "commodity", "txn", "balance", "pad", "note", "document", "price", "event", "query", "custom"]
+let s:directives = ['open', 'close', 'commodity', 'txn', 'balance', 'pad', 'note', 'document', 'price', 'event', 'query', 'custom']
 
 " ------------------------------
 " Completion functions
 " ------------------------------
 function! beancount#complete(findstart, base)
     if a:findstart
-        let l:col = searchpos('\s', "bn", line("."))[1]
-        if col == 0
+        let l:col = searchpos('\s', 'bn', line('.'))[1]
+        if l:col == 0
             return -1
         else
-            return col
+            return l:col
         endif
     endif
 
-    let l:partial_line = strpart(getline("."), 0, getpos(".")[2]-1)
+    let l:partial_line = strpart(getline('.'), 0, getpos('.')[2]-1)
     " Match directive types
     if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d $'
         return beancount#complete_basic(s:directives, a:base, '')
@@ -86,25 +79,25 @@ function! beancount#complete(findstart, base)
     let l:first = strpart(a:base, 0, 1)
     let l:rest = strpart(a:base, 1)
 
-    if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d event $' && l:first == '"'
+    if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d event $' && l:first ==# '"'
         return beancount#complete_basic(b:beancount_events, l:rest, '"')
     endif
 
-    let l:two_tokens = searchpos('\S\+\s', "bn", line("."))[1]
-    let l:prev_token = strpart(getline("."), l:two_tokens, getpos(".")[2] - l:two_tokens)
+    let l:two_tokens = searchpos('\S\+\s', 'bn', line('.'))[1]
+    let l:prev_token = strpart(getline('.'), l:two_tokens, getpos('.')[2] - l:two_tokens)
     " Match curriences if previous token is number
-    if l:prev_token =~ '^\d\+\([\.,]\d\+\)*'
+    if l:prev_token =~# '^\d\+\([\.,]\d\+\)*'
         call beancount#load_currencies()
         return beancount#complete_basic(b:beancount_currencies, a:base, '')
     endif
 
-    if l:first == "#"
+    if l:first ==# '#'
         call beancount#load_tags()
         return beancount#complete_basic(b:beancount_tags, l:rest, '#')
-    elseif l:first == "^"
+    elseif l:first ==# '^'
         call beancount#load_links()
         return beancount#complete_basic(b:beancount_links, l:rest, '^')
-    elseif l:first == '"'
+    elseif l:first ==# '"'
         call beancount#load_payees()
         return beancount#complete_basic(b:beancount_payees, l:rest, '"')
     else
@@ -167,35 +160,35 @@ endfunction
 function! beancount#load_accounts()
     if !s:using_python3 && !exists('b:beancount_accounts')
         let l:root = beancount#get_root()
-        let b:beancount_accounts = beancount#find_accounts(l:root)
+        let b:beancount_accounts = beancount#query_single(l:root, 'select distinct account;')
     endif
 endfunction
 
 function! beancount#load_tags()
     if !s:using_python3 && !exists('b:beancount_tags')
         let l:root = beancount#get_root()
-        let b:beancount_tags = beancount#find_tags(l:root)
+        let b:beancount_tags = beancount#query_single(l:root, 'select distinct tags;')
     endif
 endfunction
 
 function! beancount#load_links()
     if !s:using_python3 && !exists('b:beancount_links')
         let l:root = beancount#get_root()
-        let b:beancount_links = beancount#find_links(l:root)
+        let b:beancount_links = beancount#query_single(l:root, 'select distinct links;')
     endif
 endfunction
 
 function! beancount#load_currencies()
     if !s:using_python3 && !exists('b:beancount_currencies')
         let l:root = beancount#get_root()
-        let b:beancount_currencies = beancount#find_currencies(l:root)
+        let b:beancount_currencies = beancount#query_single(l:root, 'select distinct currency;')
     endif
 endfunction
 
 function! beancount#load_payees()
     if !s:using_python3 && !exists('b:beancount_payees')
         let l:root = beancount#get_root()
-        let b:beancount_payees = beancount#find_payees(l:root)
+        let b:beancount_payees = beancount#query_single(l:root, 'select distinct payee;')
     endif
 endfunction
 
@@ -209,9 +202,9 @@ endfunction
 " Complete account name.
 function! beancount#complete_account(base)
     if g:beancount_account_completion ==? 'chunks'
-        let l:pattern = '^\V' . substitute(a:base, ":", '\\[^:]\\*:', "g") . '\[^:]\*'
+        let l:pattern = '^\V' . substitute(a:base, ':', '\\[^:]\\*:', 'g') . '\[^:]\*'
     else
-        let l:pattern = '^\V\.\*' . substitute(a:base, ":", '\\.\\*:\\.\\*', "g") . '\.\*'
+        let l:pattern = '^\V\.\*' . substitute(a:base, ':', '\\.\\*:\\.\\*', 'g') . '\.\*'
     endif
 
     let l:matches = []
@@ -245,36 +238,11 @@ vim.command('return [{}]'.format(','.join(repr(x) for x in sorted(result_list)))
 EOF
 endfunction
 
-" Get list of accounts.
-function! beancount#find_accounts(root_file)
-    return beancount#query_single(a:root_file, 'select distinct account;')
-endfunction
-
-" Get list of tags.
-function! beancount#find_tags(root_file)
-    return beancount#query_single(a:root_file, 'select distinct tags;')
-endfunction
-
-" Get list of links.
-function! beancount#find_links(root_file)
-    return beancount#query_single(a:root_file, 'select distinct links;')
-endfunction
-
-" Get list of currencies.
-function! beancount#find_currencies(root_file)
-    return beancount#query_single(a:root_file, 'select distinct currency;')
-endfunction
-
-" Get list of payees.
-function! beancount#find_payees(root_file)
-    return beancount#query_single(a:root_file, 'select distinct payee;')
-endfunction
-
 " Call bean-doctor on the current line and dump output into a scratch buffer
 function! beancount#get_context()
-    let context = system('bean-doctor context ' . expand('%') . ' ' . line('.'))
+    let l:context = system('bean-doctor context ' . expand('%') . ' ' . line('.'))
     botright new
     setlocal buftype=nofile bufhidden=hide noswapfile
-    call append(0, split(context, '\v\n'))
+    call append(0, split(l:context, '\v\n'))
     normal! gg
 endfunction
