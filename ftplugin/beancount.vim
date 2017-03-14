@@ -10,12 +10,9 @@ setl comments=b:;
 setl commentstring=;%s
 compiler beancount
 
-" These two variables customize the behavior of the AlignCommodity command.
+" This variable customizes the behavior of the AlignCommodity command.
 if !exists('g:beancount_separator_col')
     let g:beancount_separator_col = 50
-endif
-if !exists('g:beancount_decimal_separator')
-    let g:beancount_decimal_separator = '.'
 endif
 if !exists('g:beancount_account_completion')
     let g:beancount_account_completion = 'default'

@@ -34,15 +34,14 @@ COMMANDS                                              *beancount-commands*
                     will be pushed to the right the appropriate amount, so
                     that it remains on the same character.
 
-                    The alignment character can be set using
-                    |g:beancount_decimal_separator|.  The script assumes the
-                    use of spaces for alignment. It does not understand tabs.
+                    The script assumes the use of spaces for alignment. It
+                    does not understand tabs.
 
                     You can use the following insert-mode remap to
                     automatically align commodities every time you type a
                     decimal point: >
 
-                        inoremap . .<C-O>:AlignCommodity<CR>
+                        inoremap . .<C-\><C-O>:AlignCommodity<CR>
 <
                     You may also want to set other mappings for this. For
                     example, I use >
@@ -78,11 +77,6 @@ OPTIONS                                              *beancount-options*
   The column that the decimal separator is aligned to.
 
   Default value: 50
-
-*g:beancount_decimal_separator*
-  Set the decimal separator that numbers are aligned by.
-
-  Default value: '.'
 
 *b:beancount_root*
   Set the root Beancount file. This is used to gather values for the
