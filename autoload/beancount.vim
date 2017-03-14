@@ -2,12 +2,12 @@ let s:using_python3 = has('python3')
 
 " Equivalent to python's startswith
 " Matches based on user's ignorecase preference
-function! s:startswith(string, prefix)
+function! s:startswith(string, prefix) abort
     return strpart(a:string, 0, strlen(a:prefix)) == a:prefix
 endfunction
 
 " Align currency on decimal point.
-function! beancount#align_commodity(line1, line2)
+function! beancount#align_commodity(line1, line2) abort
     " Save cursor position to adjust it if necessary.
     let l:cursor_col = col('.')
     let l:cursor_line = line('.')
@@ -52,11 +52,11 @@ function! beancount#align_commodity(line1, line2)
     endwhile
 endfunction
 
-function! s:count_expression(text, expression)
+function! s:count_expression(text, expression) abort
     return len(split(a:text, a:expression, 1)) - 1
 endfunction
 
-function! s:sort_accounts_by_depth(name1, name2)
+function! s:sort_accounts_by_depth(name1, name2) abort
     let l:depth1 = s:count_expression(a:name1, ':')
     let l:depth2 = s:count_expression(a:name2, ':')
     return l:depth1 == l:depth2 ? 0 : l:depth1 > l:depth2 ? 1 : -1
@@ -67,7 +67,7 @@ let s:directives = ['open', 'close', 'commodity', 'txn', 'balance', 'pad', 'note
 " ------------------------------
 " Completion functions
 " ------------------------------
-function! beancount#complete(findstart, base)
+function! beancount#complete(findstart, base) abort
     if a:findstart
         let l:col = searchpos('\s', 'bn', line('.'))[1]
         if l:col == 0
@@ -118,14 +118,14 @@ function! beancount#complete(findstart, base)
     endif
 endfunction
 
-function! beancount#get_root()
+function! beancount#get_root() abort
     if exists('b:beancount_root')
         return b:beancount_root
     endif
     return expand('%')
 endfunction
 
-function! beancount#load_everything()
+function! beancount#load_everything() abort
     if s:using_python3 && !exists('b:beancount_loaded')
         let l:root = beancount#get_root()
 python3 << EOF
@@ -169,35 +169,35 @@ EOF
     endif
 endfunction
 
-function! beancount#load_accounts()
+function! beancount#load_accounts() abort
     if !s:using_python3 && !exists('b:beancount_accounts')
         let l:root = beancount#get_root()
         let b:beancount_accounts = beancount#query_single(l:root, 'select distinct account;')
     endif
 endfunction
 
-function! beancount#load_tags()
+function! beancount#load_tags() abort
     if !s:using_python3 && !exists('b:beancount_tags')
         let l:root = beancount#get_root()
         let b:beancount_tags = beancount#query_single(l:root, 'select distinct tags;')
     endif
 endfunction
 
-function! beancount#load_links()
+function! beancount#load_links() abort
     if !s:using_python3 && !exists('b:beancount_links')
         let l:root = beancount#get_root()
         let b:beancount_links = beancount#query_single(l:root, 'select distinct links;')
     endif
 endfunction
 
-function! beancount#load_currencies()
+function! beancount#load_currencies() abort
     if !s:using_python3 && !exists('b:beancount_currencies')
         let l:root = beancount#get_root()
         let b:beancount_currencies = beancount#query_single(l:root, 'select distinct currency;')
     endif
 endfunction
 
-function! beancount#load_payees()
+function! beancount#load_payees() abort
     if !s:using_python3 && !exists('b:beancount_payees')
         let l:root = beancount#get_root()
         let b:beancount_payees = beancount#query_single(l:root, 'select distinct payee;')
@@ -205,14 +205,14 @@ function! beancount#load_payees()
 endfunction
 
 " General completion function
-function! beancount#complete_basic(input, base, prefix)
+function! beancount#complete_basic(input, base, prefix) abort
     let l:matches = filter(copy(a:input), 's:startswith(v:val, a:base)')
 
     return map(l:matches, 'a:prefix . v:val')
 endfunction
 
 " Complete account name.
-function! beancount#complete_account(base)
+function! beancount#complete_account(base) abort
     if g:beancount_account_completion ==? 'chunks'
         let l:pattern = '^\V' . substitute(a:base, ':', '\\[^:]\\*:', 'g') . '\[^:]\*'
     else
@@ -234,7 +234,7 @@ function! beancount#complete_account(base)
     return l:matches
 endfunction
 
-function! beancount#query_single(root_file, query)
+function! beancount#query_single(root_file, query) abort
 python << EOF
 import vim
 import subprocess
@@ -251,7 +251,7 @@ EOF
 endfunction
 
 " Call bean-doctor on the current line and dump output into a scratch buffer
-function! beancount#get_context()
+function! beancount#get_context() abort
     let l:context = system('bean-doctor context ' . expand('%') . ' ' . line('.'))
     botright new
     setlocal buftype=nofile bufhidden=hide noswapfile

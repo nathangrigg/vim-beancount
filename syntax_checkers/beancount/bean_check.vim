@@ -4,17 +4,16 @@ endif
 
 let g:loaded_syntastic_beancount_bean_check=1
 
-let s:save_cpo = &cpo
-set cpo&vim
+let s:save_cpo = &cpoptions
+set cpoptions&vim
 
 function! SyntaxCheckers_beancount_bean_check_IsAvailable() dict
-    return executable(self.getExec())
+    return executable(l:self.getExec())
 endfunction
 
 function! SyntaxCheckers_beancount_bean_check_GetLocList() dict
-    let makeprg = self.makeprgBuild({})
-
-    return SyntasticMake({ 'makeprg': makeprg })
+    let l:makeprg = l:self.makeprgBuild({})
+    return SyntasticMake({ 'makeprg': l:makeprg })
 endfunction
 
 call g:SyntasticRegistry.CreateAndRegisterChecker({
@@ -22,5 +21,5 @@ call g:SyntasticRegistry.CreateAndRegisterChecker({
     \ 'name': 'bean_check',
     \ 'exec': 'bean-check'})
 
-let &cpo = s:save_cpo
+let &cpoptions = s:save_cpo
 unlet s:save_cpo
