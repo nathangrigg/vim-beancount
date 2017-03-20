@@ -44,11 +44,13 @@ class Source(Base):
         if re.match(r'^\d{4}[/-]\d\d[/-]\d\d \w*$', context['input']):
             return [{'word': x, 'kind': 'directive'} for x in DIRECTIVES]
         # line that starts with whitespace (-> accounts)
-        if re.match(r'^(\s)+\w+$', context['input']):
+        if re.match(r'^(\s)+[\w:]+$', context['input']):
             return [{'word': x, 'kind': 'account'} for x in attrs['accounts']]
         # directive followed by account
-        if re.search(r'(balance|document|note|open|close|pad(\s\S*)?)\s\w+$',
-                     context['input']):
+        if re.search(
+                r'(balance|document|note|open|close|pad(\s[\w:]+)?)'
+                r'\s[\w:]+$',
+                context['input']):
             return [{'word': x, 'kind': 'account'} for x in attrs['accounts']]
         # events
         if re.search(r'event "[^"]*$', context['input']):
@@ -57,7 +59,7 @@ class Source(Base):
                 'kind': 'event'
             } for x in attrs['events']]
         # commodity after number
-        if re.search(r'([0-9]+|[0-9][0-9,]+[0-9])(\.[0-9]*)?\s\w+',
+        if re.search(r'\s([0-9]+|[0-9][0-9,]+[0-9])(\.[0-9]*)?\s\w+$',
                      context['input']):
             return [{
                 'word': x,
