@@ -1,44 +1,44 @@
-if exists("b:did_indent")
+if exists('b:did_indent')
     finish
 endif
 let b:did_indent = 1
 
 setlocal indentexpr=GetBeancountIndent(v:lnum)
 
-if exists("*GetBeancountIndent")
+if exists('*GetBeancountIndent')
     finish
 endif
 
 function! s:IsDirective(str)
-    return a:str =~ '\v^\s*(\d{4}-\d{2}-\d{2}|pushtag|poptag|option|plugin|include)'
+    return a:str =~# '\v^\s*(\d{4}-\d{2}-\d{2}|pushtag|poptag|option|plugin|include)'
 endfunction
 
-function! s:IsPost(str)
-    return a:str =~ '\v^\s*(Assets|Liabilities|Expenses|Equity|Income):'
+function! s:IsPosting(str)
+    return a:str =~# '\v^\s*[A-Z]\w+:'
 endfunction
 
 function! s:IsMetadata(str)
-    return a:str =~ '\v^\s*\w+:\s'
+    return a:str =~# '\v^\s*[a-z][a-zA-Z0-9\-_]+:'
 endfunction
 
 function! s:IsTransaction(str)
     " The final \S represents the flag (e.g. * or !).
-    return a:str =~ '\v^\s*\d{4}-\d{2}-\d{2}\s+(txn\s+)?\S(\s|$)'
+    return a:str =~# '\v^\s*\d{4}-\d{2}-\d{2}\s+(txn\s+)?\S(\s|$)'
 endfunction
 
 function GetBeancountIndent(line_num)
-    let this_line = getline(a:line_num)
-    let prev_line = getline(a:line_num - 1)
+    let l:this_line = getline(a:line_num)
+    let l:prev_line = getline(a:line_num - 1)
     " Don't touch comments
-    if this_line =~ '\v^\s*;' | return -1 | endif
+    if l:this_line =~# '\v^\s*;' | return -1 | endif
     " This is a new directive or previous line is blank.
-    if prev_line =~ '^\s*$' || s:IsDirective(this_line) | return 0 | endif
+    if l:prev_line =~# '^\s*$' || s:IsDirective(l:this_line) | return 0 | endif
     " Previous line is transaction or this is a posting.
-    if s:IsTransaction(prev_line) || s:IsPost(this_line) | return &sw | endif
-    if s:IsMetadata(this_line)
-        let this_indent = indent(a:line_num - 1)
-        if ! s:IsMetadata(prev_line) | let this_indent += &sw | endif
-        return this_indent
+    if s:IsTransaction(l:prev_line) || s:IsPosting(l:this_line) | return &shiftwidth | endif
+    if s:IsMetadata(l:this_line)
+        let l:this_indent = indent(a:line_num - 1)
+        if ! s:IsMetadata(l:prev_line) | let l:this_indent += &shiftwidth | endif
+        return l:this_indent
     endif
     return -1
 endfunction

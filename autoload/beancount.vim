@@ -1,78 +1,83 @@
-function! s:UsingPython3()
-  if has('python3')
-    return 1
-  endif
-  return 0
-endfunction
-
-let s:using_python3 = s:UsingPython3()
+let s:using_python3 = has('python3')
 
 " Equivalent to python's startswith
 " Matches based on user's ignorecase preference
-function! s:startswith(string, prefix)
-  return strpart(a:string, 0, strlen(a:prefix)) == a:prefix
+function! s:startswith(string, prefix) abort
+    return strpart(a:string, 0, strlen(a:prefix)) == a:prefix
 endfunction
 
 " Align currency on decimal point.
-function! beancount#align_commodity(line1, line2)
-    " Saving cursor position to adjust it if necessary.
-    let cursor_col = col('.')
-    let cursor_line = line('.')
+function! beancount#align_commodity(line1, line2) abort
+    " Save cursor position to adjust it if necessary.
+    let l:cursor_col = col('.')
+    let l:cursor_line = line('.')
 
-    " This lets me increment at start of loop, because of continue statements.
-    let i = a:line1 - 1
-    while i < a:line2
-        let i += 1
-        let s = getline(i)
-        " This matches an account name followed by a space. There may be
-        " some conflicts with non-transaction syntax that I don't know about.
-        " It won't match a comment or any non-indented line.
-        let end_acc = matchend(s, '^\v(([\-/[:digit:]]+\s+(balance|price))|\s+[!&#?%PSTCURM])?\s+\S+[^:] ')
-        if end_acc < 0 | continue | endif
-        " Where does commodity amount begin?
-        let end_space = matchend(s, '^ *', end_acc)
+    " Increment at start of loop, because of continue statements.
+    let l:current_line = a:line1 - 1
+    while l:current_line < a:line2
+        let l:current_line += 1
+        let l:line = getline(l:current_line)
+        " This matches an account name followed by a space in one of the two
+        " following cases:
+        "  - A posting line, i.e., the line starts with indentation followed
+        "    by an optional flag and the account.
+        "  - A balance directive, i.e., the line starts with a date followed
+        "    by the 'balance' keyword and the account.
+        "  - A price directive, i.e., the line starts with a date followed by
+        "    the 'price' keyword and a currency.
+        let l:end_account = matchend(l:line, '^\v' .
+            \ '[\-/[:digit:]]+\s+balance\s+([A-Z][A-Za-z0-9\-]+)(:[A-Z][A-Za-z0-9\-]*)+ ' .
+            \ '|[\-/[:digit:]]+\s+price\s+\S+ ' .
+            \ '|\s+([!&#?%PSTCURM]\s+)?([A-Z][A-Za-z0-9\-]+)(:[A-Z][A-Za-z0-9\-]*)+ '
+            \ )
+        if l:end_account < 0
+            continue
+        endif
 
-        " Now look for a minus sign and a number, and align on the next column.
-        let l:comma = g:beancount_decimal_separator == ',' ? '.' : ','
-        let separator = matchend(s, '^\v(-)?[' . l:comma . '[:digit:]]+', end_space) + 1
-        if separator < 0 | continue | endif
-        let has_spaces = end_space - end_acc
-        let need_spaces = g:beancount_separator_col - separator + has_spaces
-        if need_spaces < 0 | continue | endif
-        call setline(i, s[0 : end_acc - 1] . repeat(" ", need_spaces) . s[ end_space : -1])
-        if i == cursor_line && cursor_col >= end_acc
+        " Where does the number begin?
+        let l:begin_number = matchend(l:line, '^ *', l:end_account)
+
+        " Look for a minus sign and a number (possibly containing commas) and
+        " align on the next column.
+        let l:separator = matchend(l:line, '^\v(-)?[,[:digit:]]+', l:begin_number) + 1
+        if l:separator < 0 | continue | endif
+        let l:has_spaces = l:begin_number - l:end_account
+        let l:need_spaces = g:beancount_separator_col - l:separator + l:has_spaces
+        if l:need_spaces < 0 | continue | endif
+        call setline(l:current_line, l:line[0 : l:end_account - 1] . repeat(' ', l:need_spaces) . l:line[ l:begin_number : -1])
+        if l:current_line == l:cursor_line && l:cursor_col >= l:end_account
             " Adjust cursor position for continuity.
-            call cursor(0, cursor_col + need_spaces - has_spaces)
+            call cursor(0, l:cursor_col + l:need_spaces - l:has_spaces)
         endif
     endwhile
 endfunction
 
-function! s:count_expression(text, expression)
-  return len(split(a:text, a:expression, 1)) - 1
+function! s:count_expression(text, expression) abort
+    return len(split(a:text, a:expression, 1)) - 1
 endfunction
 
-function! s:sort_accounts_by_depth(name1, name2)
-  let l:depth1 = s:count_expression(a:name1, ':')
-  let l:depth2 = s:count_expression(a:name2, ':')
-  return depth1 == depth2 ? 0 : depth1 > depth2 ? 1 : -1
+function! s:sort_accounts_by_depth(name1, name2) abort
+    let l:depth1 = s:count_expression(a:name1, ':')
+    let l:depth2 = s:count_expression(a:name2, ':')
+    return l:depth1 == l:depth2 ? 0 : l:depth1 > l:depth2 ? 1 : -1
 endfunction
 
-let s:directives = ["open", "close", "commodity", "txn", "balance", "pad", "note", "document", "price", "event", "query", "custom"]
+let s:directives = ['open', 'close', 'commodity', 'txn', 'balance', 'pad', 'note', 'document', 'price', 'event', 'query', 'custom']
 
 " ------------------------------
 " Completion functions
 " ------------------------------
-function! beancount#complete(findstart, base)
+function! beancount#complete(findstart, base) abort
     if a:findstart
-        let l:col = searchpos('\s', "bn", line("."))[1]
-        if col == 0
+        let l:col = searchpos('\s', 'bn', line('.'))[1]
+        if l:col == 0
             return -1
         else
-            return col
+            return l:col
         endif
     endif
 
-    let l:partial_line = strpart(getline("."), 0, getpos(".")[2]-1)
+    let l:partial_line = strpart(getline('.'), 0, getpos('.')[2]-1)
     " Match directive types
     if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d $'
         return beancount#complete_basic(s:directives, a:base, '')
@@ -86,25 +91,25 @@ function! beancount#complete(findstart, base)
     let l:first = strpart(a:base, 0, 1)
     let l:rest = strpart(a:base, 1)
 
-    if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d event $' && l:first == '"'
+    if l:partial_line =~# '^\d\d\d\d\(-\|/\)\d\d\1\d\d event $' && l:first ==# '"'
         return beancount#complete_basic(b:beancount_events, l:rest, '"')
     endif
 
-    let l:two_tokens = searchpos('\S\+\s', "bn", line("."))[1]
-    let l:prev_token = strpart(getline("."), l:two_tokens, getpos(".")[2] - l:two_tokens)
+    let l:two_tokens = searchpos('\S\+\s', 'bn', line('.'))[1]
+    let l:prev_token = strpart(getline('.'), l:two_tokens, getpos('.')[2] - l:two_tokens)
     " Match curriences if previous token is number
-    if l:prev_token =~ '^\d\+\([\.,]\d\+\)*'
+    if l:prev_token =~# '^\d\+\([\.,]\d\+\)*'
         call beancount#load_currencies()
         return beancount#complete_basic(b:beancount_currencies, a:base, '')
     endif
 
-    if l:first == "#"
+    if l:first ==# '#'
         call beancount#load_tags()
         return beancount#complete_basic(b:beancount_tags, l:rest, '#')
-    elseif l:first == "^"
+    elseif l:first ==# '^'
         call beancount#load_links()
         return beancount#complete_basic(b:beancount_links, l:rest, '^')
-    elseif l:first == '"'
+    elseif l:first ==# '"'
         call beancount#load_payees()
         return beancount#complete_basic(b:beancount_payees, l:rest, '"')
     else
@@ -113,14 +118,14 @@ function! beancount#complete(findstart, base)
     endif
 endfunction
 
-function! beancount#get_root()
+function! beancount#get_root() abort
     if exists('b:beancount_root')
         return b:beancount_root
     endif
     return expand('%')
 endfunction
 
-function! beancount#load_everything()
+function! beancount#load_everything() abort
     if s:using_python3 && !exists('b:beancount_loaded')
         let l:root = beancount#get_root()
 python3 << EOF
@@ -164,54 +169,54 @@ EOF
     endif
 endfunction
 
-function! beancount#load_accounts()
+function! beancount#load_accounts() abort
     if !s:using_python3 && !exists('b:beancount_accounts')
         let l:root = beancount#get_root()
-        let b:beancount_accounts = beancount#find_accounts(l:root)
+        let b:beancount_accounts = beancount#query_single(l:root, 'select distinct account;')
     endif
 endfunction
 
-function! beancount#load_tags()
+function! beancount#load_tags() abort
     if !s:using_python3 && !exists('b:beancount_tags')
         let l:root = beancount#get_root()
-        let b:beancount_tags = beancount#find_tags(l:root)
+        let b:beancount_tags = beancount#query_single(l:root, 'select distinct tags;')
     endif
 endfunction
 
-function! beancount#load_links()
+function! beancount#load_links() abort
     if !s:using_python3 && !exists('b:beancount_links')
         let l:root = beancount#get_root()
-        let b:beancount_links = beancount#find_links(l:root)
+        let b:beancount_links = beancount#query_single(l:root, 'select distinct links;')
     endif
 endfunction
 
-function! beancount#load_currencies()
+function! beancount#load_currencies() abort
     if !s:using_python3 && !exists('b:beancount_currencies')
         let l:root = beancount#get_root()
-        let b:beancount_currencies = beancount#find_currencies(l:root)
+        let b:beancount_currencies = beancount#query_single(l:root, 'select distinct currency;')
     endif
 endfunction
 
-function! beancount#load_payees()
+function! beancount#load_payees() abort
     if !s:using_python3 && !exists('b:beancount_payees')
         let l:root = beancount#get_root()
-        let b:beancount_payees = beancount#find_payees(l:root)
+        let b:beancount_payees = beancount#query_single(l:root, 'select distinct payee;')
     endif
 endfunction
 
 " General completion function
-function! beancount#complete_basic(input, base, prefix)
+function! beancount#complete_basic(input, base, prefix) abort
     let l:matches = filter(copy(a:input), 's:startswith(v:val, a:base)')
 
     return map(l:matches, 'a:prefix . v:val')
 endfunction
 
 " Complete account name.
-function! beancount#complete_account(base)
+function! beancount#complete_account(base) abort
     if g:beancount_account_completion ==? 'chunks'
-        let l:pattern = '^\V' . substitute(a:base, ":", '\\[^:]\\*:', "g") . '\[^:]\*'
+        let l:pattern = '^\V' . substitute(a:base, ':', '\\[^:]\\*:', 'g') . '\[^:]\*'
     else
-        let l:pattern = '^\V\.\*' . substitute(a:base, ":", '\\.\\*:\\.\\*', "g") . '\.\*'
+        let l:pattern = '^\V\.\*' . substitute(a:base, ':', '\\.\\*:\\.\\*', 'g') . '\.\*'
     endif
 
     let l:matches = []
@@ -229,7 +234,7 @@ function! beancount#complete_account(base)
     return l:matches
 endfunction
 
-function! beancount#query_single(root_file, query)
+function! beancount#query_single(root_file, query) abort
 python << EOF
 import vim
 import subprocess
@@ -245,36 +250,11 @@ vim.command('return [{}]'.format(','.join(repr(x) for x in sorted(result_list)))
 EOF
 endfunction
 
-" Get list of accounts.
-function! beancount#find_accounts(root_file)
-    return beancount#query_single(a:root_file, 'select distinct account;')
-endfunction
-
-" Get list of tags.
-function! beancount#find_tags(root_file)
-    return beancount#query_single(a:root_file, 'select distinct tags;')
-endfunction
-
-" Get list of links.
-function! beancount#find_links(root_file)
-    return beancount#query_single(a:root_file, 'select distinct links;')
-endfunction
-
-" Get list of currencies.
-function! beancount#find_currencies(root_file)
-    return beancount#query_single(a:root_file, 'select distinct currency;')
-endfunction
-
-" Get list of payees.
-function! beancount#find_payees(root_file)
-    return beancount#query_single(a:root_file, 'select distinct payee;')
-endfunction
-
 " Call bean-doctor on the current line and dump output into a scratch buffer
-function! beancount#get_context()
-    let context = system('bean-doctor context ' . expand('%') . ' ' . line('.'))
+function! beancount#get_context() abort
+    let l:context = system('bean-doctor context ' . expand('%') . ' ' . line('.'))
     botright new
     setlocal buftype=nofile bufhidden=hide noswapfile
-    call append(0, split(context, '\v\n'))
+    call append(0, split(l:context, '\v\n'))
     normal! gg
 endfunction
