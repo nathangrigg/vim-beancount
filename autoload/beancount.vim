@@ -39,7 +39,7 @@ function! beancount#align_commodity(line1, line2) abort
 
         " Look for a minus sign and a number (possibly containing commas) and
         " align on the next column.
-        let l:separator = matchend(l:line, '^\v(-)?[,[:digit:]]+', l:begin_number) + 1
+        let l:separator = matchend(l:line, '^\v([-+])?[,[:digit:]]+', l:begin_number) + 1
         if l:separator < 0 | continue | endif
         let l:has_spaces = l:begin_number - l:end_account
         let l:need_spaces = g:beancount_separator_col - l:separator + l:has_spaces
