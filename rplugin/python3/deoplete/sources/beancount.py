@@ -33,7 +33,12 @@ class Source(Base):
             self.error('Importing beancount failed.')
 
     def on_event(self, context):
-        self.__make_cache(context)
+        if context['event'] in ['Init', 'BufWritePost']:
+            # Make cache on BufNewFile, BufRead, and BufWritePost
+            self.__make_cache(context)
+        else:
+            # Do nothing on VimLeavePre
+            pass
 
     def get_complete_position(self, context):
         m = re.search(r'\S*$', context['input'])
