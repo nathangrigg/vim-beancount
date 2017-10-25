@@ -3,5 +3,5 @@ call ale#linter#Define('beancount', {
 \   'output_stream': 'stderr',
 \   'executable': 'bean-check',
 \   'command': 'bean-check %s',
-\   'callback': 'ale#handlers#HandleUnixFormatAsError',
+\   'callback': 'ale#handlers#unix#HandleAsError',
 \})
