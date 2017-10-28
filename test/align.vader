@@ -1,6 +1,8 @@
 Given beancount:
   2012-12-12 balance Assets:LongLongLongAccount 50.00
   2012-12-12 balance Assets:Cash 50.00
+  2012-12-12 balance Assets:Cash -50.00
+  2012-12-12 balance Assets:Cash +50.00
   2012-12-12 price EUR 50.00 USD
       metadata: 50
       Assets:Cash  50
@@ -15,6 +17,8 @@ Execute (align):
 Expect beancount:
   2012-12-12 balance Assets:LongLongLongAccount  50.00
   2012-12-12 balance Assets:Cash                 50.00
+  2012-12-12 balance Assets:Cash                -50.00
+  2012-12-12 balance Assets:Cash                +50.00
   2012-12-12 price EUR                           50.00 USD
       metadata: 50
       Assets:Cash                                50
@@ -30,6 +34,8 @@ Execute (change alignment column and align again):
 Expect beancount:
   2012-12-12 balance Assets:LongLongLongAccount 50.00
   2012-12-12 balance Assets:Cash       50.00
+  2012-12-12 balance Assets:Cash      -50.00
+  2012-12-12 balance Assets:Cash      +50.00
   2012-12-12 price EUR                 50.00 USD
       metadata: 50
       Assets:Cash                      50
