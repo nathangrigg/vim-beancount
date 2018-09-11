@@ -5,4 +5,6 @@ function! s:setf(filetype) abort
     endif
 endfunction
 
-au BufNewFile,BufRead *.bean,*.beancount  call s:setf('beancount')
+augroup Beancount
+    au BufNewFile,BufRead *.bean,*.beancount  call s:setf('beancount')
+augroup END
