@@ -2,7 +2,8 @@ matrix:
   include:
   - env: TEST_ENV=lint
     language: python
-    before_script: pip install vim-vint pathlib
+    python: 3.5
+    before_script: pip install vim-vint
     script: vint -s .
   - env: TEST_ENV=test
     language: viml
