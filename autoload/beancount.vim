@@ -146,6 +146,8 @@ for index, entry in enumerate(entries):
         accounts.add(entry.account)
         if entry.currencies:
             currencies.update(entry.currencies)
+    elif isinstance(entry, data.Close):
+        accounts.remove(entry.account)
     elif isinstance(entry, data.Commodity):
         currencies.add(entry.currency)
     elif isinstance(entry, data.Event):
@@ -172,7 +174,7 @@ endfunction
 function! beancount#load_accounts() abort
     if !s:using_python3 && !exists('b:beancount_accounts')
         let l:root = beancount#get_root()
-        let b:beancount_accounts = beancount#query_single(l:root, 'select distinct account;')
+        let b:beancount_accounts = beancount#query_single(l:root, 'select distinct account WHERE CLOSE_DATE(account) = null;')
     endif
 endfunction
 
