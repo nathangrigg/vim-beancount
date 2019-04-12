@@ -29,3 +29,7 @@ command! -buffer -range GetContext
 
 " Omnifunc for account completion.
 setl omnifunc=beancount#complete
+
+if exists('g:loaded_ale')
+  call ale#fix#registry#Add('bean-format', 'ale#fixers#beanformat#Fix', ['beancount'], 'bean-format')
+endif
