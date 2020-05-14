@@ -23,6 +23,7 @@ class Source(Base):
 
         self.name = 'beancount'
         self.mark = '[bc]'
+        self.matchers = ['matcher_full_fuzzy']
         self.filetypes = ['beancount']
         self.rank = 500
         self.min_pattern_length = 0
