@@ -26,9 +26,9 @@ function! beancount#align_commodity(line1, line2) abort
         "  - A price directive, i.e., the line starts with a date followed by
         "    the 'price' keyword and a currency.
         let l:end_account = matchend(l:line, '^\v' .
-            \ '[\-/[:digit:]]+\s+balance\s+([A-Z][A-Za-z0-9\-]+)(:[A-Z][A-Za-z0-9\-]*)+ ' .
+            \ '[\-/[:digit:]]+\s+balance\s+([A-Z][A-Za-z0-9\-]+)(:[A-Z0-9][A-Za-z0-9\-]*)+ ' .
             \ '|[\-/[:digit:]]+\s+price\s+\S+ ' .
-            \ '|\s+([!&#?%PSTCURM]\s+)?([A-Z][A-Za-z0-9\-]+)(:[A-Z][A-Za-z0-9\-]*)+ '
+            \ '|\s+([!&#?%PSTCURM]\s+)?([A-Z][A-Za-z0-9\-]+)(:[A-Z0-9][A-Za-z0-9\-]*)+ '
             \ )
         if l:end_account < 0
             continue
