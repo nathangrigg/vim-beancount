@@ -48,41 +48,32 @@ class Source(Base):
     def gather_candidates(self, context):
         attrs = self.attributes
         if re.match(r'^\d{4}[/-]\d\d[/-]\d\d \w*$', context['input']):
-            return [{'word': x, 'kind': 'directive'} for x in DIRECTIVES]
+            return attrs['directives']
         # line that starts with whitespace (-> accounts)
         if re.match(r'^(\s)+[\w:]+$', context['input']):
-            return [{'word': x, 'kind': 'account'} for x in attrs['accounts']]
+            return attrs['accounts']
         # directive followed by account
         if re.search(
                 r'(balance|document|note|open|close|pad(\s[\w:]+)?)'
                 r'\s[\w:]+$',
                 context['input']):
-            return [{'word': x, 'kind': 'account'} for x in attrs['accounts']]
+            return attrs['accounts']
         # events
         if re.search(r'event "[^"]*$', context['input']):
-            return [{
-                'word': '"{}"'.format(x),
-                'kind': 'event'
-            } for x in attrs['events']]
+            return attrs['events']
         # commodity after number
         if re.search(r'\s([0-9]+|[0-9][0-9,]+[0-9])(\.[0-9]*)?\s\w+$',
                      context['input']):
-            return [{
-                'word': x,
-                'kind': 'commodity'
-            } for x in attrs['commodities']]
+            return attrs['commodities']
         if not context['complete_str']:
             return []
         first = context['complete_str'][0]
         if first == '#':
-            return [{'word': '#' + w, 'kind': 'tag'} for w in attrs['tags']]
+            return attrs['tags']
         elif first == '^':
-            return [{'word': '^' + w, 'kind': 'link'} for w in attrs['links']]
+            return attrs['links']
         elif first == '"':
-            return [{
-                'word': '"{}"'.format(w),
-                'kind': 'payee'
-            } for w in attrs['payees']]
+            return attrs['payees']
         return []
 
     def __make_cache(self, context):
@@ -111,10 +102,22 @@ class Source(Base):
                 events.add(entry.type)
 
         self.attributes = {
-            'accounts': sorted(accounts),
-            'events': sorted(events),
-            'commodities': options['commodities'],
-            'links': sorted(links),
-            'payees': sorted(payees),
-            'tags': sorted(tags),
+            'accounts': [
+                {'word': x, 'kind': 'account'} for x in sorted(accounts)],
+            'events': [{
+                'word': '"{}"'.format(x),
+                'kind': 'event'
+            } for x in sorted(events)],
+            'commodities': [{
+                'word': x,
+                'kind': 'commodity'
+            } for x in options['commodities']],
+            'links': [{'word': '^' + w, 'kind': 'link'} for w in sorted(links)],
+            'payees': [{
+                'word': '"{}"'.format(w),
+                'kind': 'payee'
+            } for w in sorted(payees)],
+            'tags': [{'word': '#' + w, 'kind': 'tag'} for w in sorted(tags)],
+            'directives': [
+                {'word': x, 'kind': 'directive'} for x in DIRECTIVES],
         }
