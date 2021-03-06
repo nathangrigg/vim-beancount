@@ -28,11 +28,13 @@ class Source(Base):
         self.rank = 500
         self.min_pattern_length = 0
         self.attributes = collections.defaultdict(list)
+        self.beancount_root = None
         self.auto_complete_delay = 10
 
     def on_init(self, context):
         if not HAS_BEANCOUNT:
             self.error('Importing beancount failed.')
+        self.beancount_root = self.vim.eval("beancount#get_root()")
 
     def on_event(self, context):
         if context['event'] in ('Init', 'BufWritePost'):
@@ -87,7 +89,7 @@ class Source(Base):
         if not HAS_BEANCOUNT:
             return
 
-        entries, _, options = load_file(self.vim.eval("beancount#get_root()"))
+        entries, _, options = load_file(self.beancount_root)
 
         accounts = set()
         events = set()
