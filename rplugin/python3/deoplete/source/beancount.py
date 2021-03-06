@@ -28,6 +28,7 @@ class Source(Base):
         self.rank = 500
         self.min_pattern_length = 0
         self.attributes = collections.defaultdict(list)
+        self.auto_complete_delay = 10
 
     def on_init(self, context):
         if not HAS_BEANCOUNT:
