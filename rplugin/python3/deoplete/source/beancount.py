@@ -16,6 +16,14 @@ DIRECTIVES = [
 ]
 
 
+COMPLETE_PATTERN = re.compile(r'\S*$')
+DIRECTIVE_PATTERN = re.compile(r'^\d{4}[/-]\d\d[/-]\d\d \w*$')
+ACCOUNT_PATTERN = re.compile(r'^(\s)+[\w:]+$')
+DIRECTIVE_ACCOUNT_PATTERN = re.compile(
+    r'(balance|document|note|open|close|pad(\s[\w:]+)?)\s[\w:]+$')
+EVENT_PATTERN = re.compile(r'event "[^"]*$')
+COMMODITY_PATTERN = re.compile(r'\s([0-9]+|[0-9][0-9,]+[0-9])(\.[0-9]*)?\s\w+$')
+
 class Source(Base):
     def __init__(self, vim):
         super().__init__(vim)
@@ -42,28 +50,25 @@ class Source(Base):
             self.__make_cache(context)
 
     def get_complete_position(self, context):
-        m = re.search(r'\S*$', context['input'])
+        m = COMPLETE_PATTERN.search(context['input'])
         return m.start() if m else -1
 
     def gather_candidates(self, context):
+        self.debug("Attributes are {}".format(self.attributes))
         attrs = self.attributes
-        if re.match(r'^\d{4}[/-]\d\d[/-]\d\d \w*$', context['input']):
+        if DIRECTIVE_PATTERN.match(context['input']):
             return attrs['directives']
         # line that starts with whitespace (-> accounts)
-        if re.match(r'^(\s)+[\w:]+$', context['input']):
+        if ACCOUNT_PATTERN.match(context['input']):
             return attrs['accounts']
         # directive followed by account
-        if re.search(
-                r'(balance|document|note|open|close|pad(\s[\w:]+)?)'
-                r'\s[\w:]+$',
-                context['input']):
+        if DIRECTIVE_ACCOUNT_PATTERN.search(context['input']):
             return attrs['accounts']
         # events
-        if re.search(r'event "[^"]*$', context['input']):
+        if EVENT_PATTERN.search(context['input']):
             return attrs['events']
         # commodity after number
-        if re.search(r'\s([0-9]+|[0-9][0-9,]+[0-9])(\.[0-9]*)?\s\w+$',
-                     context['input']):
+        if COMMODITY_PATTERN.search(context['input']):
             return attrs['commodities']
         if not context['complete_str']:
             return []
