@@ -5,7 +5,39 @@ endif
 let b:did_ftplugin = 1
 let b:undo_ftplugin = 'setlocal foldmethod< comments< commentstring<'
 
-setl foldmethod=syntax
+function! BeancountFoldexpr()
+  let thisline = getline(v:lnum)
+  let nextline = getline(v:lnum+1)
+
+  if thisline =~ '^\s*$'
+    " ignore empty lines
+    return '='
+  endif
+
+  if thisline =~ '^#'
+    " current line starts with hashes
+    return '>'.matchend(thisline, '^#\+')
+  elseif thisline =~ '^\S'
+    if nextline =~ '^\s\+'
+      return 'a1'
+    else
+      return '='
+    endif
+  elseif thisline =~ '^\s\+'
+    if nextline =~ '^\(\s*$\|\S\)'
+      return 's1'
+    else
+      return '='
+    endif
+  else
+    " keep previous foldlevel
+    return '='
+  endif
+endfunc
+
+setl foldexpr=BeancountFoldexpr()
+setl foldmethod=expr
+
 setl comments=b:;
 setl commentstring=;%s
 compiler beancount
