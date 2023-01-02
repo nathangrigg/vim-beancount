@@ -77,8 +77,6 @@ class Source(Base):
             return attrs['tags']
         elif first == '^':
             return attrs['links']
-        elif first == '"':
-            return attrs['payees']
         return []
 
     def __make_cache(self, context):
@@ -90,15 +88,11 @@ class Source(Base):
         accounts = set()
         events = set()
         links = set()
-        payees = set()
         tags = set()
 
         for entry in entries:
             if isinstance(entry, data.Open):
                 accounts.add(entry.account)
-            elif isinstance(entry, data.Transaction):
-                if entry.payee:
-                    payees.add(entry.payee)
             if hasattr(entry, 'links') and entry.links:
                 links.update(entry.links)
             if hasattr(entry, 'tags') and entry.tags:
@@ -118,10 +112,6 @@ class Source(Base):
                 'kind': 'commodity'
             } for x in options['commodities']],
             'links': [{'word': '^' + w, 'kind': 'link'} for w in sorted(links)],
-            'payees': [{
-                'word': '"{}"'.format(w),
-                'kind': 'payee'
-            } for w in sorted(payees)],
             'tags': [{'word': '#' + w, 'kind': 'tag'} for w in sorted(tags)],
             'directives': [
                 {'word': x, 'kind': 'directive'} for x in DIRECTIVES],
