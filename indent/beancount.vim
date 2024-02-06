@@ -9,6 +9,16 @@ if exists('*GetBeancountIndent')
     finish
 endif
 
+if exists('*shiftwidth')
+    func s:sw()
+        return shiftwidth()
+    endfunc
+else
+    func s:sw()
+        return &shiftwidth
+    endfunc
+endif
+
 function! s:IsDirective(str)
     return a:str =~# '\v^\s*(\d{4}-\d{2}-\d{2}|pushtag|poptag|option|plugin|include)'
 endfunction
@@ -34,10 +44,10 @@ function GetBeancountIndent(line_num)
     " This is a new directive or previous line is blank.
     if l:prev_line =~# '^\s*$' || s:IsDirective(l:this_line) | return 0 | endif
     " Previous line is transaction or this is a posting.
-    if s:IsTransaction(l:prev_line) || s:IsPosting(l:this_line) | return &shiftwidth | endif
+    if s:IsTransaction(l:prev_line) || s:IsPosting(l:this_line) | return s:sw() | endif
     if s:IsMetadata(l:this_line)
         let l:this_indent = indent(a:line_num - 1)
-        if ! s:IsMetadata(l:prev_line) | let l:this_indent += &shiftwidth | endif
+        if ! s:IsMetadata(l:prev_line) | let l:this_indent += s:sw() | endif
         return l:this_indent
     endif
     return -1
