@@ -8,7 +8,7 @@ let b:undo_ftplugin = 'setlocal foldmethod< comments< commentstring<'
 setl regexpengine=1
 setl foldmethod=syntax
 setl comments=b:;
-setl commentstring=;%s
+setl commentstring=;\ %s
 compiler beancount
 
 " This variable customizes the behavior of the AlignCommodity command.
